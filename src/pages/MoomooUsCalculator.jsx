@@ -1241,7 +1241,7 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
             title="Profit Summary" 
             subtitle={calculationMode === 'planning' ? "Actual performance after deducting USD fees and currency impacts." : "Returns calculated from contract note amounts."}
             headerActions={
-              <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border select-none ${
+              <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border select-none whitespace-nowrap ${
                 getProfitType() === 'profit' 
                   ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
                   : getProfitType() === 'loss' 
