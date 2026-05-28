@@ -410,6 +410,20 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
       quotePriceUsed: sellPriceWasFetched ? quotePriceUsed : null,
       quoteSymbol: sellPriceWasFetched ? quoteSymbol : null,
       sellPriceWasFetched: sellPriceWasFetched,
+      // Individual fee breakdown (used by Settings > Copy from last saved trade fees)
+      feeBreakdown: {
+        buyCommission: parseFloat(buyCommission) || 0,
+        buyPlatformFee: parseFloat(buyPlatformFee) || 0,
+        buySettlementFee: parseFloat(buySettlementFee) || 0,
+        otherBuyFee: parseFloat(otherBuyFee) || 0,
+        sellCommission: parseFloat(sellCommission) || 0,
+        sellPlatformFee: parseFloat(sellPlatformFee) || 0,
+        sellSettlementFee: parseFloat(sellSettlementFee) || 0,
+        secFee: parseFloat(secFee) || 0,
+        tafFee: parseFloat(tafFee) || 0,
+        catFee: parseFloat(catFee) || 0,
+        otherSellFee: parseFloat(otherSellFee) || 0,
+      },
     };
 
     const saved = saveTrade(tradeObject);
