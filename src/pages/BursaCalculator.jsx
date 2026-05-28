@@ -1022,10 +1022,20 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
                   <span className="font-mono text-slate-200">{formatCurrency(results.totalBuyCostMyr, 'MYR', 2)}</span>
                 </div>
                 {calculationMode === 'planning' && (
-                  <div className="flex justify-between items-center text-red-450/90">
-                    <span>Accumulated Broker Fees:</span>
-                    <span className="font-mono">{formatCurrency(results.totalFeesMyr, 'MYR', 2)}</span>
-                  </div>
+                  <>
+                    <div className="flex justify-between items-center text-slate-500 pl-3">
+                      <span>↳ Buy Side Fees:</span>
+                      <span className="font-mono">{formatCurrency(results.totalBuyFeesMyr, 'MYR', 2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-slate-500 pl-3">
+                      <span>↳ Sell Side Fees:</span>
+                      <span className="font-mono">{formatCurrency(results.totalSellFeesMyr, 'MYR', 2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-red-450/90 border-t border-slate-900/60 pt-1.5">
+                      <span>Total Buy + Sell Fees:</span>
+                      <span className="font-mono">{formatCurrency(results.totalFeesMyr, 'MYR', 2)}</span>
+                    </div>
+                  </>
                 )}
                 {parseFloat(quantity) > 0 && (
                   <div className="flex justify-between items-center border-t border-slate-900 pt-2 text-slate-355">
