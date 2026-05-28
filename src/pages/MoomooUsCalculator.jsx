@@ -6,7 +6,8 @@ import SectionCard from '../components/SectionCard';
 import InputField from '../components/InputField';
 import ResultCard from '../components/ResultCard';
 import MarketTabs from '../components/MarketTabs';
-import { Calculator, RotateCcw, Save, Copy, Check, AlertTriangle, ArrowUpRight, DollarSign, Info, ChevronDown, ChevronUp, History } from 'lucide-react';
+import { Calculator, RotateCcw, Save, Copy, Check, AlertTriangle, ArrowUpRight, DollarSign, Info, ChevronDown, ChevronUp, History, Loader2, TrendingUp } from 'lucide-react';
+import { fetchYahooLastPrice } from '../services/quoteService';
 
 /**
  * MooMoo US Calculator page with Planning & Contract Note modes and What-If scenarios.
@@ -63,6 +64,41 @@ export default function MoomooUsCalculator() {
   const [loadSuccess, setLoadSuccess] = useState(false);
   const [notes, setNotes] = useState('');
   const [showNotesInput, setShowNotesInput] = useState(false);
+
+  // Live Quote States
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [quoteError, setQuoteError] = useState(null);
+  const [quoteSource, setQuoteSource] = useState(null);
+  const [quoteFetchedAt, setQuoteFetchedAt] = useState(null);
+  const [quotePriceUsed, setQuotePriceUsed] = useState(null);
+  const [quoteSymbol, setQuoteSymbol] = useState(null);
+  const [quoteCurrency, setQuoteCurrency] = useState(null);
+  const [sellPriceWasFetched, setSellPriceWasFetched] = useState(false);
+  const [quoteManualEdited, setQuoteManualEdited] = useState(false);
+
+  const handleFetchLastPrice = async () => {
+    const symbolToFetch = (calculationMode === 'planning' ? ticker : contractTicker).trim();
+    if (!symbolToFetch) return;
+
+    setQuoteLoading(true);
+    setQuoteError(null);
+
+    const res = await fetchYahooLastPrice(symbolToFetch);
+    setQuoteLoading(false);
+
+    if (res.ok) {
+      setSellPrice(res.price.toString());
+      setQuoteSource(res.source);
+      setQuoteFetchedAt(res.fetchedAt);
+      setQuotePriceUsed(res.price);
+      setQuoteSymbol(res.symbol);
+      setQuoteCurrency(res.currency);
+      setSellPriceWasFetched(true);
+      setQuoteManualEdited(false);
+    } else {
+      setQuoteError(res.error);
+    }
+  };
 
   // Load defaults on mount
   useEffect(() => {
@@ -259,6 +295,16 @@ export default function MoomooUsCalculator() {
     setNotes('');
     setShowNotesInput(false);
     setErrors({});
+
+    setQuoteLoading(false);
+    setQuoteError(null);
+    setQuoteSource(null);
+    setQuoteFetchedAt(null);
+    setQuotePriceUsed(null);
+    setQuoteSymbol(null);
+    setQuoteCurrency(null);
+    setSellPriceWasFetched(false);
+    setQuoteManualEdited(false);
   };
 
   // Reset Fees specifically
@@ -296,6 +342,10 @@ Sell: ${formatUsQuantity(quantity)} @ $${parseFloat(sellPrice).toFixed(settings?
 Net Profit: $${results.netProfitUsd.toFixed(2)} / RM${results.netProfitMyr.toFixed(2)}
 ROI: ${results.roiPercent.toFixed(2)}%
 Break-even: $${results.breakEvenSellPriceUsd.toFixed(settings?.priceDecimals ?? 4)}`;
+      if (sellPriceWasFetched) {
+        const localTime = new Date(quoteFetchedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        summaryText += `\nSell price source: Yahoo Finance last price fetched at ${localTime}`;
+      }
     } else {
       summaryText = `Ticker: ${contractTicker.toUpperCase() || 'N/A'}
 Mode: Contract Note Verification (MooMoo US)
@@ -355,6 +405,11 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
       roiPercent: results.roiPercent,
       breakEvenSellPriceUsd: results.breakEvenSellPriceUsd,
       notes: calculationMode === 'planning' ? notes : `${contractNotes} (Contract Verification)`,
+      quoteSource: sellPriceWasFetched ? quoteSource : null,
+      quoteFetchedAt: sellPriceWasFetched ? quoteFetchedAt : null,
+      quotePriceUsed: sellPriceWasFetched ? quotePriceUsed : null,
+      quoteSymbol: sellPriceWasFetched ? quoteSymbol : null,
+      sellPriceWasFetched: sellPriceWasFetched,
     };
 
     const saved = saveTrade(tradeObject);
@@ -422,8 +477,11 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
     const profitStatement = profitUsd >= 0 
       ? `made a ${actionWord} of ${formattedProfitUsd} (RM ${formattedProfitMyr})`
       : `incurred a ${actionWord} of ${formattedProfitUsd} (RM ${formattedProfitMyr})`;
-      
-    return `You bought ${formatUsQuantity(qty)} shares of ${tick} at ${formattedBPrice} and sold them at ${formattedSPrice}. After accounting for ${formatCurrency(results.totalFeesUsd, 'USD', 2)} in total broker fees, you ${profitStatement}, representing a return of ${roi.toFixed(2)}% on your initial outlay.`;
+    let sentence = `You bought ${formatUsQuantity(qty)} shares of ${tick} at ${formattedBPrice} and sold them at ${formattedSPrice}. After accounting for ${formatCurrency(results.totalFeesUsd, 'USD', 2)} in total broker fees, you ${profitStatement}, representing a return of ${roi.toFixed(2)}% on your initial outlay.`;
+    if (sellPriceWasFetched) {
+      sentence += ` Sell price uses the last price fetched from Yahoo Finance.`;
+    }
+    return sentence;
   };
 
   // What-If Sell Scenarios Calculation
@@ -535,19 +593,93 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
                     tooltip="The purchase price paid per share in US Dollars."
                   />
                   
-                  <InputField
-                    label="Sell Price (USD)"
-                    id="sellPrice"
-                    type="number"
-                    step="0.0001"
-                    placeholder="0.00"
-                    value={sellPrice}
-                    onChange={(e) => setSellPrice(e.target.value)}
-                    error={errors.sellPrice}
-                    prefix="$"
-                    helperText="Leave 0 if planning target sell price"
-                    tooltip="The selling price per share in US Dollars. You can type 0 to use the Target Planner to solve for this."
-                  />
+                  <div className="flex flex-col space-y-1.5 w-full">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-1.5 mb-0.5">
+                        <label htmlFor="sellPrice" className="text-xs font-semibold text-slate-400 tracking-wider uppercase">
+                          Sell Price (USD)
+                        </label>
+                        <div className="group relative flex items-center">
+                          <span className="cursor-help text-slate-500 hover:text-slate-350 transition-colors">
+                            <Info className="w-3.5 h-3.5" />
+                          </span>
+                          <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-52 p-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] text-slate-300 leading-normal shadow-2xl backdrop-blur-md normal-case font-normal select-none pointer-events-none">
+                            The selling price per share in US Dollars. You can type 0 to use the Target Planner to solve for this.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex space-x-2">
+                      <div className="relative flex-1">
+                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 font-medium select-none pointer-events-none text-sm">
+                          $
+                        </div>
+                        <input
+                          id="sellPrice"
+                          type="number"
+                          step="0.0001"
+                          placeholder="0.00"
+                          value={sellPrice}
+                          onChange={(e) => {
+                            setSellPrice(e.target.value);
+                            if (sellPriceWasFetched) {
+                              setQuoteManualEdited(true);
+                              setSellPriceWasFetched(false);
+                            }
+                          }}
+                          className={`w-full bg-slate-950/60 border ${
+                            errors.sellPrice ? 'border-red-500/80 focus:border-red-500' : 'border-slate-800/80 hover:border-slate-700/60 focus:border-emerald-500/80'
+                          } rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 ${
+                            errors.sellPrice ? 'focus:ring-red-500' : 'focus:ring-emerald-500'
+                          } transition-all duration-200`}
+                        />
+                      </div>
+                      
+                      <button
+                        type="button"
+                        onClick={handleFetchLastPrice}
+                        disabled={quoteLoading || !ticker.trim()}
+                        className="px-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-450 hover:text-slate-200 hover:bg-slate-900 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center shrink-0"
+                        title="Use last price from Yahoo Finance"
+                      >
+                        {quoteLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                        ) : (
+                          <TrendingUp className="w-4 h-4 text-emerald-400" />
+                        )}
+                      </button>
+                    </div>
+                    {errors.sellPrice && <span className="text-xs text-red-400 mt-0.5">{errors.sellPrice}</span>}
+                    
+                    {/* Live Fetch status / manual override / errors alerts */}
+                    {quoteError && (
+                      <span className="text-[10px] text-red-400 mt-1 leading-tight block">
+                        ⚠️ Could not fetch last price. You can still enter sell price manually. ({quoteError})
+                      </span>
+                    )}
+                    {sellPriceWasFetched && !quoteError && (
+                      <span className="text-[10px] text-emerald-450 mt-1 leading-tight block font-medium">
+                        ✓ Last price from Yahoo Finance: ${quotePriceUsed?.toFixed(4)} • {quoteSymbol} • fetched {new Date(quoteFetchedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
+                    {quoteManualEdited && !sellPriceWasFetched && (
+                      <span className="text-[10px] text-slate-500 mt-1 leading-tight block font-medium">
+                        ✏️ Manual sell price entered.
+                      </span>
+                    )}
+                    {!quoteError && !sellPriceWasFetched && !quoteManualEdited && (
+                      <span className="text-[10px] text-slate-500 mt-1 leading-tight block">
+                        Leave 0 if planning target sell price
+                      </span>
+                    )}
+                    
+                    {sellPriceWasFetched && quoteCurrency && quoteCurrency.toUpperCase() !== 'USD' && (
+                      <span className="text-[10px] text-amber-400 mt-1 leading-tight block font-medium">
+                        ⚠️ Yahoo returned currency {quoteCurrency}. Please verify before using this price.
+                      </span>
+                    )}
+                  </div>
                   
                   <InputField
                     label="Quantity"
@@ -1259,6 +1391,9 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
               <li>MYR profit uses buy FX for buy cost and sell FX for sell proceeds.</li>
               <li>Break-even price includes estimated fees.</li>
               <li>Target sell price is an estimate based on current fee inputs.</li>
+              <li className="text-[9px] text-slate-600 mt-1.5 border-t border-slate-900 pt-1.5 list-none uppercase font-semibold tracking-wider">
+                * Market data may be delayed or unavailable. Verify with MooMoo before placing trades.
+              </li>
             </ul>
           </div>
 

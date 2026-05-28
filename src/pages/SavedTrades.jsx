@@ -310,10 +310,22 @@ export default function SavedTrades() {
                   </div>
                 </div>
 
+                {/* Quote metadata box */}
+                {trade.sellPriceWasFetched && (
+                  <div className="mt-2.5 p-2 py-1.5 rounded-xl border border-emerald-500/10 bg-emerald-500/[0.02] text-[9px] text-emerald-400 leading-normal flex items-center justify-between">
+                    <span>
+                      📊 Price fetched from {trade.quoteSource} ({trade.quoteSymbol})
+                    </span>
+                    <span className="font-mono text-slate-500 text-[8px]">
+                      {new Date(trade.quoteFetchedAt).toLocaleDateString('en-MY')} {new Date(trade.quoteFetchedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                )}
+
                 {/* Notes box */}
                 {trade.notes && (
                   <div className="mt-3.5 p-2.5 rounded-xl border border-slate-850 bg-slate-950/20 text-[10px] text-slate-450 leading-relaxed">
-                    <span className="font-semibold text-slate-550 uppercase tracking-wider text-[8px] block mb-0.5">Trader Notes:</span>
+                    <span className="font-semibold text-slate-555 uppercase tracking-wider text-[8px] block mb-0.5">Trader Notes:</span>
                     <p>{trade.notes}</p>
                   </div>
                 )}

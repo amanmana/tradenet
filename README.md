@@ -1,16 +1,51 @@
-# React + Vite
+# TradeNet MY
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+TradeNet MY is a standalone stock trading profit/loss calculator tailored for Malaysian users trading US stocks (via MooMoo) and local Bursa Malaysia stocks.
 
-Currently, two official plugins are available:
+## Technology Stack
+- **Frontend**: React 19, Vite, Tailwind CSS v4, Lucide React
+- **Hosting / Functions**: Cloudflare Pages & Cloudflare Pages Functions
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Local Development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Option 1: Standard Vite Development Server
+Runs the frontend only. Note that Pages Functions API endpoints (like Yahoo Quotes) will fallback gracefully or fail.
+```bash
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+### Option 2: Full Local Dev with Cloudflare Wrangler (API support)
+To emulate the production environment locally including backend API Pages Functions, compile the frontend build and run it with Wrangler Pages dev:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. **Install Wrangler** (if needed):
+   ```bash
+   npm install -D wrangler
+   ```
+
+2. **Build the production bundle**:
+   ```bash
+   npm run build
+   ```
+
+3. **Start local emulation**:
+   ```bash
+   npx wrangler pages dev dist
+   ```
+   Wrangler will host your compiled frontend assets along with your local `/functions/api` workers on `http://localhost:8788`.
+
+---
+
+## Deployment Settings for Cloudflare Pages
+
+Configure your new project on the Cloudflare Dashboard with the following parameters:
+
+- **Project Name**: `tradenet` (or your choice)
+- **Framework Preset**: `Vite`
+- **Build Command**: `npm run build`
+- **Build Output Directory**: `dist`
+- **Functions Directory**: `functions`
+
+Once connected to your repository, pushes to `main` will build and publish automatically with the custom API endpoints!
