@@ -289,7 +289,7 @@ export default function SavedTrades() {
                 {/* Final Returns row */}
                 <div className="flex justify-between items-center py-2.5 px-3.5 rounded-xl border border-slate-900/60 bg-slate-950/30 text-xs">
                   <div className="space-y-0.5">
-                    <span className="text-[10px] text-slate-500 font-semibold">Realized Yields</span>
+                    <span className="text-[10px] text-slate-500 font-semibold">Profit Summary</span>
                     <div className="flex items-center space-x-1.5">
                       <span className={`font-mono font-extrabold text-sm ${
                         profitType === 'profit' ? 'text-emerald-400' : profitType === 'loss' ? 'text-red-400' : 'text-slate-400'

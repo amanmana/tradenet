@@ -1224,7 +1224,7 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
           
           {/* Main Return Card */}
           <SectionCard 
-            title="Realized Yields" 
+            title="Profit Summary" 
             subtitle={calculationMode === 'planning' ? "Actual performance after deducting USD fees and currency impacts." : "Returns calculated from contract note amounts."}
             headerActions={
               <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border select-none ${
