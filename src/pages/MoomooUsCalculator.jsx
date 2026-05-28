@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getSettings, saveTrade, getLastSavedTrade } from '../utils/storage';
 import { calculateMoomooUsTrade, calculateMoomooUsTarget, calculateMoomooUsTradeAtPrice } from '../calculators/moomooUsCalculator';
-import { formatCurrency, formatPercent } from '../utils/formatters';
+import { formatCurrency, formatPercent, formatQuantity } from '../utils/formatters';
 import SectionCard from '../components/SectionCard';
 import InputField from '../components/InputField';
 import ResultCard from '../components/ResultCard';
@@ -411,11 +411,11 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
     
     if (calculationMode === 'contract') {
       const stateWord = profitUsd >= 0 ? 'net profit' : 'net loss';
-      return `Contract Note Verification: You verified a trade of ${tick} (Qty: ${qty.toLocaleString() || 'N/A'}). Based on total buy cost of ${formatCurrency(results.totalBuyCostUsd, 'USD', 2)} and total sell proceeds of ${formatCurrency(results.totalSellProceedsUsd, 'USD', 2)}, you realized a ${stateWord} of ${formattedProfitUsd} (RM ${formattedProfitMyr}) representing a return of ${roi.toFixed(2)}%.`;
+      return `Contract Note Verification: You verified a trade of ${tick} (Qty: ${formatQuantity(qty) || 'N/A'}). Based on total buy cost of ${formatCurrency(results.totalBuyCostUsd, 'USD', 2)} and total sell proceeds of ${formatCurrency(results.totalSellProceedsUsd, 'USD', 2)}, you realized a ${stateWord} of ${formattedProfitUsd} (RM ${formattedProfitMyr}) representing a return of ${roi.toFixed(2)}%.`;
     }
 
     if (sPrice <= 0) {
-      return `You are planning to buy ${qty.toLocaleString()} shares of ${tick} at ${formattedBPrice} for a total capital outlay of ${formatCurrency(results.totalBuyCostUsd, 'USD', 2)} (including ${formatCurrency(results.totalBuyFeesUsd, 'USD', 2)} in buy-side fees). Your estimated break-even selling price is ${formatCurrency(results.breakEvenSellPriceUsd, 'USD', settings?.priceDecimals || 4)} to recover transaction costs.`;
+      return `You are planning to buy ${formatQuantity(qty)} shares of ${tick} at ${formattedBPrice} for a total capital outlay of ${formatCurrency(results.totalBuyCostUsd, 'USD', 2)} (including ${formatCurrency(results.totalBuyFeesUsd, 'USD', 2)} in buy-side fees). Your estimated break-even selling price is ${formatCurrency(results.breakEvenSellPriceUsd, 'USD', settings?.priceDecimals || 4)} to recover transaction costs.`;
     }
     
     const actionWord = profitUsd >= 0 ? 'net profit' : 'net loss';
@@ -423,7 +423,7 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
       ? `made a ${actionWord} of ${formattedProfitUsd} (RM ${formattedProfitMyr})`
       : `incurred a ${actionWord} of ${formattedProfitUsd} (RM ${formattedProfitMyr})`;
       
-    return `You bought ${qty.toLocaleString()} shares of ${tick} at ${formattedBPrice} and sold them at ${formattedSPrice}. After accounting for ${formatCurrency(results.totalFeesUsd, 'USD', 2)} in total broker fees, you ${profitStatement}, representing a return of ${roi.toFixed(2)}% on your initial outlay.`;
+    return `You bought ${formatQuantity(qty)} shares of ${tick} at ${formattedBPrice} and sold them at ${formattedSPrice}. After accounting for ${formatCurrency(results.totalFeesUsd, 'USD', 2)} in total broker fees, you ${profitStatement}, representing a return of ${roi.toFixed(2)}% on your initial outlay.`;
   };
 
   // What-If Sell Scenarios Calculation

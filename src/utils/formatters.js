@@ -55,3 +55,18 @@ export const formatDate = (dateVal) => {
     minute: '2-digit'
   });
 };
+
+/**
+ * Formats a quantity, preserving up to 4 decimal places without rounding (using standard built-in formatting).
+ * @param {number} value - The quantity value.
+ * @returns {string} - Formatted quantity string.
+ */
+export const formatQuantity = (value) => {
+  if (value === null || value === undefined || isNaN(value)) {
+    return '0';
+  }
+  return Number(value).toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 4,
+  });
+};
