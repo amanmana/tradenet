@@ -6,54 +6,91 @@ const STORAGE_KEYS = {
 };
 
 /**
- * Retrieves the user settings from LocalStorage.
- * Falls back to DEFAULT_SETTINGS if empty.
+ * Deep-merges saved settings with DEFAULT_SETTINGS so any missing keys
+ * added in newer versions of the app are gracefully filled in.
+ */
+export const mergeWithDefaultSettings = (saved) => {
+  if (!saved || typeof saved !== 'object') return { ...DEFAULT_SETTINGS };
+
+  return {
+    ...DEFAULT_SETTINGS,
+    ...saved,
+    // Deep-merge nested fee objects so partial saves don't wipe defaults
+    moomooUs: {
+      ...DEFAULT_SETTINGS.moomooUs,
+      ...(saved.moomooUs || {}),
+    },
+    bursa: {
+      ...DEFAULT_SETTINGS.bursa,
+      ...(saved.bursa || {}),
+    },
+  };
+};
+
+/**
+ * Retrieves user settings from localStorage.
+ * Falls back gracefully to DEFAULT_SETTINGS if nothing is stored yet.
  */
 export const getSettings = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.SETTINGS);
     if (!raw) {
-      // Save default settings if not exists
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(DEFAULT_SETTINGS));
-      return DEFAULT_SETTINGS;
+      return { ...DEFAULT_SETTINGS };
     }
-    const parsed = JSON.parse(raw);
-    // Merge with DEFAULT_SETTINGS to ensure any new keys exist
-    return { ...DEFAULT_SETTINGS, ...parsed };
+    return mergeWithDefaultSettings(JSON.parse(raw));
   } catch (error) {
-    console.error('Error reading settings from localStorage:', error);
-    return DEFAULT_SETTINGS;
+    console.error('[TradeNet] Error reading settings:', error);
+    return { ...DEFAULT_SETTINGS };
   }
 };
 
 /**
- * Saves settings to LocalStorage.
+ * Saves settings to localStorage and optionally logs in development.
+ * Returns true on success.
  */
 export const saveSettings = (settings) => {
   try {
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    const toSave = mergeWithDefaultSettings(settings);
+    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(toSave));
+    if (import.meta.env.DEV) {
+      console.log('[TradeNet MY] settings saved', toSave);
+    }
     return true;
   } catch (error) {
-    console.error('Error saving settings to localStorage:', error);
+    console.error('[TradeNet] Error saving settings:', error);
     return false;
   }
 };
 
 /**
- * Retrieves saved trades list.
+ * Resets settings to factory defaults, persists, and returns the defaults.
+ */
+export const resetSettings = () => {
+  try {
+    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(DEFAULT_SETTINGS));
+    return { ...DEFAULT_SETTINGS };
+  } catch (error) {
+    console.error('[TradeNet] Error resetting settings:', error);
+    return { ...DEFAULT_SETTINGS };
+  }
+};
+
+/**
+ * Retrieves saved trades list (newest first).
  */
 export const getSavedTrades = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.TRADES);
     return raw ? JSON.parse(raw) : [];
   } catch (error) {
-    console.error('Error reading saved trades from localStorage:', error);
+    console.error('[TradeNet] Error reading saved trades:', error);
     return [];
   }
 };
 
 /**
- * Saves a new trade to LocalStorage.
+ * Saves a new trade to localStorage (prepends for newest-first order).
  */
 export const saveTrade = (trade) => {
   try {
@@ -63,53 +100,51 @@ export const saveTrade = (trade) => {
       id: trade.id || Date.now().toString(),
       createdAt: trade.createdAt || new Date().toISOString(),
     };
-    trades.unshift(newTrade); // Newest first
+    trades.unshift(newTrade);
     localStorage.setItem(STORAGE_KEYS.TRADES, JSON.stringify(trades));
     return newTrade;
   } catch (error) {
-    console.error('Error saving trade to localStorage:', error);
+    console.error('[TradeNet] Error saving trade:', error);
     return null;
   }
 };
 
 /**
- * Deletes a trade from LocalStorage.
+ * Deletes a single trade by id.
  */
 export const deleteTrade = (id) => {
   try {
-    const trades = getSavedTrades();
-    const filtered = trades.filter((t) => t.id !== id);
+    const filtered = getSavedTrades().filter((t) => t.id !== id);
     localStorage.setItem(STORAGE_KEYS.TRADES, JSON.stringify(filtered));
     return true;
   } catch (error) {
-    console.error('Error deleting trade from localStorage:', error);
+    console.error('[TradeNet] Error deleting trade:', error);
     return false;
   }
 };
 
 /**
- * Clears all trades from LocalStorage.
+ * Clears all saved trades.
  */
 export const clearAllTrades = () => {
   try {
     localStorage.removeItem(STORAGE_KEYS.TRADES);
     return true;
   } catch (error) {
-    console.error('Error clearing trades from localStorage:', error);
+    console.error('[TradeNet] Error clearing trades:', error);
     return false;
   }
 };
 
 /**
- * Retrieves the latest saved trade for a specific market (US or BURSA)
+ * Returns the most recent saved trade for a given market ('US' | 'BURSA').
  */
 export const getLastSavedTrade = (market) => {
   try {
     const trades = getSavedTrades();
-    const filtered = trades.filter((t) => t.market === market);
-    return filtered.length > 0 ? filtered[0] : null;
+    return trades.find((t) => t.market === market) ?? null;
   } catch (error) {
-    console.error('Error getting last saved trade from localStorage:', error);
+    console.error('[TradeNet] Error getting last saved trade:', error);
     return null;
   }
 };
