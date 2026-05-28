@@ -545,6 +545,14 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
         </div>
       </div>
 
+      {/* Toggle Helper Explanation */}
+      <div className="text-[11px] text-slate-400 leading-normal bg-slate-900/20 border border-slate-900 p-3 px-4 rounded-xl flex items-start space-x-2">
+        <Info className="w-4 h-4 text-slate-550 shrink-0 mt-0.5" />
+        <span>
+          Planning Mode estimates profit before selling. Contract Note Mode uses actual broker totals from your completed trade or broker statement.
+        </span>
+      </div>
+
       {saveSuccess && (
         <div className="flex items-center space-x-2 p-3.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-xs font-semibold animate-in fade-in duration-200">
           <Check className="w-4 h-4 shrink-0" />
@@ -756,6 +764,12 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
             ) : (
               /* Contract Note Mode Inputs */
               <SectionCard title="Contract Note Verification" subtitle="Enter values exactly from your broker contract note to audit returns.">
+                <div className="mb-4 p-3.5 bg-emerald-500/[0.02] border border-emerald-500/10 rounded-xl text-[11px] text-emerald-400 leading-relaxed flex items-start space-x-2">
+                  <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span>
+                    Use this mode after a trade is completed. Enter the total buy cost and total sell proceeds shown in your broker contract note. Fees are already included in those totals.
+                  </span>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <InputField
                     label="Ticker Symbol"
