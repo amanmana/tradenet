@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getSavedTrades, deleteTrade, clearAllTrades, saveTrade, getSettings } from '../utils/storage';
 import { exportTradesToCsv } from '../utils/csvExport';
-import { formatCurrency, formatPercent, formatDate } from '../utils/formatters';
+import { formatCurrency, formatPercent, formatDate, formatQuantity, formatUsQuantity } from '../utils/formatters';
 import SectionCard from '../components/SectionCard';
 import ResultCard from '../components/ResultCard';
 import EmptyState from '../components/EmptyState';
@@ -262,7 +262,9 @@ export default function SavedTrades() {
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   <div className="text-center p-2 rounded-xl bg-slate-950/30 border border-slate-900">
                     <span className="text-[9px] uppercase text-slate-500 block font-semibold">Volume</span>
-                    <span className="text-xs font-mono font-bold text-slate-300 mt-1 block">{trade.quantity}</span>
+                    <span className="text-xs font-mono font-bold text-slate-300 mt-1 block">
+                      {isUS ? formatUsQuantity(trade.quantity) : formatQuantity(trade.quantity)}
+                    </span>
                   </div>
                   
                   <div className="text-center p-2 rounded-xl bg-slate-950/30 border border-slate-900">

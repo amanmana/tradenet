@@ -1,3 +1,5 @@
+import { formatQuantity, formatUsQuantity } from './formatters';
+
 /**
  * Exports an array of saved trades into a CSV file downloaded by the browser.
  * @param {Array} trades - List of saved trade objects.
@@ -27,7 +29,7 @@ export const exportTradesToCsv = (trades) => {
     const escapedTicker = `"${(t.ticker || '').replace(/"/g, '""')}"`;
     const buyPrice = t.buyPrice || 0;
     const sellPrice = t.sellPrice || 0;
-    const quantity = t.quantity || 0;
+    const quantity = t.market === 'US' ? formatUsQuantity(t.quantity) : formatQuantity(t.quantity);
     
     // For Bursa, Net Profit USD is blank. Break-even can be USD or MYR depending on market
     const netProfitUsd = t.market === 'US' ? (t.netProfitUsd ?? 0) : '';

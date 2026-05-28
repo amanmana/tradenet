@@ -70,3 +70,14 @@ export const formatQuantity = (value) => {
     maximumFractionDigits: 4,
   });
 };
+
+/**
+ * Formats a US stock quantity, preserving up to 4 decimal places without rounding (e.g. 1.2337).
+ * @param {number|string} value - The quantity value.
+ * @returns {string} - Formatted quantity string.
+ */
+export const formatUsQuantity = (value) => {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "0";
+  return num.toFixed(4).replace(/\.?0+$/, "");
+};

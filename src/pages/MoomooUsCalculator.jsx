@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getSettings, saveTrade, getLastSavedTrade } from '../utils/storage';
 import { calculateMoomooUsTrade, calculateMoomooUsTarget, calculateMoomooUsTradeAtPrice } from '../calculators/moomooUsCalculator';
-import { formatCurrency, formatPercent, formatQuantity } from '../utils/formatters';
+import { formatCurrency, formatPercent, formatUsQuantity } from '../utils/formatters';
 import SectionCard from '../components/SectionCard';
 import InputField from '../components/InputField';
 import ResultCard from '../components/ResultCard';
@@ -291,11 +291,11 @@ export default function MoomooUsCalculator() {
     if (calculationMode === 'planning') {
       summaryText = `Ticker: ${ticker.toUpperCase() || 'N/A'}
 Mode: Planning Mode (MooMoo US)
-Buy: ${quantity} @ $${parseFloat(buyPrice).toFixed(settings?.priceDecimals || 2)}
-Sell: ${quantity} @ $${parseFloat(sellPrice).toFixed(settings?.priceDecimals || 2)}
+Buy: ${formatUsQuantity(quantity)} @ $${parseFloat(buyPrice).toFixed(settings?.priceDecimals ?? 4)}
+Sell: ${formatUsQuantity(quantity)} @ $${parseFloat(sellPrice).toFixed(settings?.priceDecimals ?? 4)}
 Net Profit: $${results.netProfitUsd.toFixed(2)} / RM${results.netProfitMyr.toFixed(2)}
 ROI: ${results.roiPercent.toFixed(2)}%
-Break-even: $${results.breakEvenSellPriceUsd.toFixed(settings?.priceDecimals || 2)}`;
+Break-even: $${results.breakEvenSellPriceUsd.toFixed(settings?.priceDecimals ?? 4)}`;
     } else {
       summaryText = `Ticker: ${contractTicker.toUpperCase() || 'N/A'}
 Mode: Contract Note Verification (MooMoo US)
@@ -384,7 +384,7 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
       } else {
         const gap = targetResults.targetGapUsd;
         return {
-          text: `You need $${gap.toFixed(settings?.priceDecimals || 2)} more per share to hit your target.`,
+          text: `You need $${gap.toFixed(settings?.priceDecimals ?? 4)} more per share to hit your target.`,
           type: 'warning'
         };
       }
@@ -404,18 +404,18 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
     const profitMyr = results.netProfitMyr || 0;
     const roi = results.roiPercent || 0;
     
-    const formattedBPrice = formatCurrency(bPrice, 'USD', settings?.priceDecimals || 2);
-    const formattedSPrice = formatCurrency(sPrice, 'USD', settings?.priceDecimals || 2);
+    const formattedBPrice = formatCurrency(bPrice, 'USD', settings?.priceDecimals ?? 4);
+    const formattedSPrice = formatCurrency(sPrice, 'USD', settings?.priceDecimals ?? 4);
     const formattedProfitUsd = formatCurrency(Math.abs(profitUsd), 'USD', 2);
     const formattedProfitMyr = formatCurrency(Math.abs(profitMyr), 'MYR', 2);
     
     if (calculationMode === 'contract') {
       const stateWord = profitUsd >= 0 ? 'net profit' : 'net loss';
-      return `Contract Note Verification: You verified a trade of ${tick} (Qty: ${formatQuantity(qty) || 'N/A'}). Based on total buy cost of ${formatCurrency(results.totalBuyCostUsd, 'USD', 2)} and total sell proceeds of ${formatCurrency(results.totalSellProceedsUsd, 'USD', 2)}, you realized a ${stateWord} of ${formattedProfitUsd} (RM ${formattedProfitMyr}) representing a return of ${roi.toFixed(2)}%.`;
+      return `Contract Note Verification: You verified a trade of ${tick} (Qty: ${formatUsQuantity(qty) || 'N/A'}). Based on total buy cost of ${formatCurrency(results.totalBuyCostUsd, 'USD', 2)} and total sell proceeds of ${formatCurrency(results.totalSellProceedsUsd, 'USD', 2)}, you realized a ${stateWord} of ${formattedProfitUsd} (RM ${formattedProfitMyr}) representing a return of ${roi.toFixed(2)}%.`;
     }
 
     if (sPrice <= 0) {
-      return `You are planning to buy ${formatQuantity(qty)} shares of ${tick} at ${formattedBPrice} for a total capital outlay of ${formatCurrency(results.totalBuyCostUsd, 'USD', 2)} (including ${formatCurrency(results.totalBuyFeesUsd, 'USD', 2)} in buy-side fees). Your estimated break-even selling price is ${formatCurrency(results.breakEvenSellPriceUsd, 'USD', settings?.priceDecimals || 4)} to recover transaction costs.`;
+      return `You are planning to buy ${formatUsQuantity(qty)} shares of ${tick} at ${formattedBPrice} for a total capital outlay of ${formatCurrency(results.totalBuyCostUsd, 'USD', 2)} (including ${formatCurrency(results.totalBuyFeesUsd, 'USD', 2)} in buy-side fees). Your estimated break-even selling price is ${formatCurrency(results.breakEvenSellPriceUsd, 'USD', settings?.priceDecimals || 4)} to recover transaction costs.`;
     }
     
     const actionWord = profitUsd >= 0 ? 'net profit' : 'net loss';
@@ -423,7 +423,7 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
       ? `made a ${actionWord} of ${formattedProfitUsd} (RM ${formattedProfitMyr})`
       : `incurred a ${actionWord} of ${formattedProfitUsd} (RM ${formattedProfitMyr})`;
       
-    return `You bought ${formatQuantity(qty)} shares of ${tick} at ${formattedBPrice} and sold them at ${formattedSPrice}. After accounting for ${formatCurrency(results.totalFeesUsd, 'USD', 2)} in total broker fees, you ${profitStatement}, representing a return of ${roi.toFixed(2)}% on your initial outlay.`;
+    return `You bought ${formatUsQuantity(qty)} shares of ${tick} at ${formattedBPrice} and sold them at ${formattedSPrice}. After accounting for ${formatCurrency(results.totalFeesUsd, 'USD', 2)} in total broker fees, you ${profitStatement}, representing a return of ${roi.toFixed(2)}% on your initial outlay.`;
   };
 
   // What-If Sell Scenarios Calculation
@@ -553,7 +553,7 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
                     label="Quantity"
                     id="quantity"
                     type="number"
-                    step="1"
+                    step="any"
                     placeholder="0"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
@@ -664,7 +664,7 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
                     label="Quantity (Optional)"
                     id="quantity"
                     type="number"
-                    step="1"
+                    step="any"
                     placeholder="e.g. 10"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
