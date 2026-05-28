@@ -171,6 +171,49 @@ export default function Settings() {
     setTimeout(() => setCopyFeeStatus(null), 3000);
   };
 
+  // ─── Bursa Fee Presets: Save inline ──────────────────────────────────────
+  const handleSaveBursaFees = () => {
+    const ok = saveSettings(settings);
+    if (ok) {
+      setSavedSnapshot({ ...settings });
+      setIsDirty(false);
+      showToast('bursaFees', 'success', 'Settings saved.');
+    }
+  };
+
+  // ─── Bursa Fee Presets: Reset to zero (UI only) ───────────────────────────
+  const handleResetBursaFeesToZero = () => {
+    setIsDirty(true);
+    setLocalSettings(prev => ({
+      ...prev,
+      bursaFees: {
+        ...prev.bursaFees,
+        buyBrokerageFee: 0,
+        buyClearingFee: 0,
+        buyStampDuty: 0,
+        buySst: 0,
+        otherBuyFee: 0,
+        sellBrokerageFee: 0,
+        sellClearingFee: 0,
+        sellStampDuty: 0,
+        sellSst: 0,
+        otherSellFee: 0,
+      },
+    }));
+    showToast('bursaFees', 'warn', 'Bursa fee presets reset in form. Click Save Settings to keep changes.', 4000);
+  };
+
+  // ─── Bursa Fee Presets: Restore saved ────────────────────────────────────
+  const handleRestoreBursaFees = () => {
+    if (!savedSnapshot) return;
+    setLocalSettings(prev => ({
+      ...prev,
+      bursaFees: { ...savedSnapshot.bursaFees },
+    }));
+    setIsDirty(false);
+    showToast('bursaFees', 'info', 'Saved Bursa fee presets restored.', 3000);
+  };
+
   // ─── Rendering ────────────────────────────────────────────────────────────
   if (!savedSnapshot) return null; // wait for hydration
 
@@ -453,62 +496,130 @@ export default function Settings() {
           </div>
         </SectionCard>
 
-        {/* ── Bursa Malaysia Presets ───────────────────────────────────────── */}
-        <SectionCard title="Bursa Malaysia Default Fees" subtitle="Set standard transaction charge templates for Bursa Malaysia trades (in MYR).">
-          <div className="space-y-6">
+        {/* ── Bursa Malaysia Fee Presets ────────────────────────────────────── */}
+        <SectionCard
+          title={
+            <span className="flex items-center gap-2.5">
+              Bursa Malaysia Fee Presets
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider bg-teal-500/10 border border-teal-500/20 text-teal-400 select-none whitespace-nowrap">
+                User-defined
+              </span>
+            </span>
+          }
+          subtitle="Set your own estimated fee assumptions for Bursa Malaysia trades. Leave as 0 if you prefer to enter actual fees manually from your broker contract note."
+          headerActions={
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              <button
+                type="button"
+                id="btn-bursa-reset-zero"
+                onClick={handleResetBursaFeesToZero}
+                title="Set all Bursa fee fields to 0 in the form (not saved yet)"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200 hover:bg-slate-900 transition-all cursor-pointer whitespace-nowrap"
+              >
+                <Eraser className="w-3 h-3" />
+                Reset to Zero
+              </button>
+            </div>
+          }
+        >
+          <div className="space-y-5">
+
+            {/* Disclaimer */}
+            <div className="flex items-start gap-2.5 p-3.5 rounded-xl border border-teal-500/15 bg-teal-500/[0.03] text-teal-300/80 text-[11px] leading-relaxed">
+              <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-teal-400" />
+              <span>
+                These presets are saved locally in your browser and used for Auto Estimate mode. They are not live broker rates.
+              </span>
+            </div>
+
+            {/* Buy Side */}
             <div>
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 border-b border-slate-900 pb-1">
                 Buy Side Charges (MYR)
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-                <InputField label="Brokerage Fee" id="bursa_buyBrokerage" type="number" step="0.01" prefix="RM"
-                  value={settings.bursa.buyBrokerage}
-                  onChange={(e) => handleChange('bursa', 'buyBrokerage', parseFloat(e.target.value) || 0)}
+                <InputField label="Brokerage Fee" id="bursa_buyBrokerageFee" type="number" step="0.01" prefix="RM"
+                  value={settings.bursaFees.buyBrokerageFee}
+                  onChange={(e) => handleChange('bursaFees', 'buyBrokerageFee', parseFloat(e.target.value) || 0)}
                 />
-                <InputField label="Clearing Fee" id="bursa_buyClearing" type="number" step="0.01" prefix="RM"
-                  value={settings.bursa.buyClearing}
-                  onChange={(e) => handleChange('bursa', 'buyClearing', parseFloat(e.target.value) || 0)}
+                <InputField label="Clearing Fee" id="bursa_buyClearingFee" type="number" step="0.01" prefix="RM"
+                  value={settings.bursaFees.buyClearingFee}
+                  onChange={(e) => handleChange('bursaFees', 'buyClearingFee', parseFloat(e.target.value) || 0)}
                 />
                 <InputField label="Stamp Duty" id="bursa_buyStampDuty" type="number" step="1" prefix="RM"
-                  value={settings.bursa.buyStampDuty}
-                  onChange={(e) => handleChange('bursa', 'buyStampDuty', parseFloat(e.target.value) || 0)}
+                  value={settings.bursaFees.buyStampDuty}
+                  onChange={(e) => handleChange('bursaFees', 'buyStampDuty', parseFloat(e.target.value) || 0)}
                 />
                 <InputField label="SST Amount" id="bursa_buySst" type="number" step="0.01" prefix="RM"
-                  value={settings.bursa.buySst}
-                  onChange={(e) => handleChange('bursa', 'buySst', parseFloat(e.target.value) || 0)}
+                  value={settings.bursaFees.buySst}
+                  onChange={(e) => handleChange('bursaFees', 'buySst', parseFloat(e.target.value) || 0)}
                 />
                 <InputField label="Other Buy Fee" id="bursa_otherBuyFee" type="number" step="0.01" prefix="RM"
-                  value={settings.bursa.otherBuyFee}
-                  onChange={(e) => handleChange('bursa', 'otherBuyFee', parseFloat(e.target.value) || 0)}
+                  value={settings.bursaFees.otherBuyFee}
+                  onChange={(e) => handleChange('bursaFees', 'otherBuyFee', parseFloat(e.target.value) || 0)}
                 />
               </div>
             </div>
 
+            {/* Sell Side */}
             <div>
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 border-b border-slate-900 pb-1">
                 Sell Side Charges (MYR)
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-                <InputField label="Brokerage Fee" id="bursa_sellBrokerage" type="number" step="0.01" prefix="RM"
-                  value={settings.bursa.sellBrokerage}
-                  onChange={(e) => handleChange('bursa', 'sellBrokerage', parseFloat(e.target.value) || 0)}
+                <InputField label="Brokerage Fee" id="bursa_sellBrokerageFee" type="number" step="0.01" prefix="RM"
+                  value={settings.bursaFees.sellBrokerageFee}
+                  onChange={(e) => handleChange('bursaFees', 'sellBrokerageFee', parseFloat(e.target.value) || 0)}
                 />
-                <InputField label="Clearing Fee" id="bursa_sellClearing" type="number" step="0.01" prefix="RM"
-                  value={settings.bursa.sellClearing}
-                  onChange={(e) => handleChange('bursa', 'sellClearing', parseFloat(e.target.value) || 0)}
+                <InputField label="Clearing Fee" id="bursa_sellClearingFee" type="number" step="0.01" prefix="RM"
+                  value={settings.bursaFees.sellClearingFee}
+                  onChange={(e) => handleChange('bursaFees', 'sellClearingFee', parseFloat(e.target.value) || 0)}
                 />
                 <InputField label="Stamp Duty" id="bursa_sellStampDuty" type="number" step="1" prefix="RM"
-                  value={settings.bursa.sellStampDuty}
-                  onChange={(e) => handleChange('bursa', 'sellStampDuty', parseFloat(e.target.value) || 0)}
+                  value={settings.bursaFees.sellStampDuty}
+                  onChange={(e) => handleChange('bursaFees', 'sellStampDuty', parseFloat(e.target.value) || 0)}
                 />
                 <InputField label="SST Amount" id="bursa_sellSst" type="number" step="0.01" prefix="RM"
-                  value={settings.bursa.sellSst}
-                  onChange={(e) => handleChange('bursa', 'sellSst', parseFloat(e.target.value) || 0)}
+                  value={settings.bursaFees.sellSst}
+                  onChange={(e) => handleChange('bursaFees', 'sellSst', parseFloat(e.target.value) || 0)}
                 />
                 <InputField label="Other Sell Fee" id="bursa_otherSellFee" type="number" step="0.01" prefix="RM"
-                  value={settings.bursa.otherSellFee}
-                  onChange={(e) => handleChange('bursa', 'otherSellFee', parseFloat(e.target.value) || 0)}
+                  value={settings.bursaFees.otherSellFee}
+                  onChange={(e) => handleChange('bursaFees', 'otherSellFee', parseFloat(e.target.value) || 0)}
                 />
+              </div>
+            </div>
+
+            {/* Inline toast */}
+            {toasts.bursaFees && (
+              <Toast type={toasts.bursaFees.type}>{toasts.bursaFees.msg}</Toast>
+            )}
+
+            {/* Card-level action footer */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 border-t border-slate-800/60">
+              <p className="text-[11px] text-slate-500 leading-relaxed max-w-sm">
+                These are user-defined fee presets. They are saved locally in your browser and used for Auto Estimate mode.
+              </p>
+              <div className="flex items-center gap-2 flex-wrap justify-end shrink-0">
+                <button
+                  type="button"
+                  id="btn-bursa-restore-saved"
+                  onClick={handleRestoreBursaFees}
+                  title="Discard unsaved Bursa fee edits and reload saved values"
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border border-slate-800 bg-slate-950/60 text-slate-400 hover:text-slate-200 hover:bg-slate-900 transition-all cursor-pointer whitespace-nowrap"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  Restore Saved
+                </button>
+                <button
+                  type="button"
+                  id="btn-bursa-save-fees"
+                  onClick={handleSaveBursaFees}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-500 transition-all shadow-sm shadow-emerald-500/10 cursor-pointer whitespace-nowrap"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  Save Settings
+                </button>
               </div>
             </div>
           </div>

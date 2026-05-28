@@ -4,9 +4,9 @@ export const DEFAULT_SETTINGS = {
   viewCurrency: 'both', // 'usd', 'myr', 'both'
   usBrokerPreset: 'MooMoo',
   darkMode: true,
-  priceDecimals: 4, // 4 decimals for stock prices
-  standardDecimals: 2, // 2 decimals for values/fees/profits
-  
+  priceDecimals: 4,       // 4 decimals for stock prices
+  standardDecimals: 2,    // 2 decimals for values/fees/profits
+
   // MooMoo US Default Fee Presets
   moomooUs: {
     buyCommission: 0.00,
@@ -21,18 +21,19 @@ export const DEFAULT_SETTINGS = {
     catFee: 0.00,
     otherSellFee: 0.00,
   },
-  
+
   // Bursa Malaysia Default Fee Presets
-  bursa: {
-    buyBrokerage: 0.00,
-    buyClearing: 0.00,
+  // Field names match the UI inputs in BursaCalculator.jsx
+  bursaFees: {
+    buyBrokerageFee: 0.00,
+    buyClearingFee: 0.00,
     buyStampDuty: 0.00,
     buySst: 0.00,
     otherBuyFee: 0.00,
-    sellBrokerage: 0.00,
-    sellClearing: 0.00,
+    sellBrokerageFee: 0.00,
+    sellClearingFee: 0.00,
     sellStampDuty: 0.00,
     sellSst: 0.00,
     otherSellFee: 0.00,
-  }
+  },
 };

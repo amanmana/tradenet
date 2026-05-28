@@ -6,23 +6,57 @@ const STORAGE_KEYS = {
 };
 
 /**
- * Deep-merges saved settings with DEFAULT_SETTINGS so any missing keys
- * added in newer versions of the app are gracefully filled in.
+ * Migrates old `bursa` key (field names: buyBrokerage, sellBrokerage…)
+ * into the new `bursaFees` key (field names: buyBrokerageFee, sellBrokerageFee…).
+ * Safe to call multiple times — no-ops if already migrated.
+ */
+const migrateLegacyBursa = (saved) => {
+  if (!saved) return saved;
+
+  // If old `bursa` key exists but new `bursaFees` does not, migrate
+  if (saved.bursa && !saved.bursaFees) {
+    const b = saved.bursa;
+    saved = {
+      ...saved,
+      bursaFees: {
+        buyBrokerageFee: b.buyBrokerage ?? 0,
+        buyClearingFee: b.buyClearing ?? 0,
+        buyStampDuty: b.buyStampDuty ?? 0,
+        buySst: b.buySst ?? 0,
+        otherBuyFee: b.otherBuyFee ?? 0,
+        sellBrokerageFee: b.sellBrokerage ?? 0,
+        sellClearingFee: b.sellClearing ?? 0,
+        sellStampDuty: b.sellStampDuty ?? 0,
+        sellSst: b.sellSst ?? 0,
+        otherSellFee: b.otherSellFee ?? 0,
+      },
+    };
+    // Drop the old key so we don't migrate again
+    delete saved.bursa;
+  }
+
+  return saved;
+};
+
+/**
+ * Deep-merges saved settings with DEFAULT_SETTINGS.
+ * Handles migration from legacy `bursa` → `bursaFees`.
  */
 export const mergeWithDefaultSettings = (saved) => {
   if (!saved || typeof saved !== 'object') return { ...DEFAULT_SETTINGS };
 
+  const migrated = migrateLegacyBursa({ ...saved });
+
   return {
     ...DEFAULT_SETTINGS,
-    ...saved,
-    // Deep-merge nested fee objects so partial saves don't wipe defaults
+    ...migrated,
     moomooUs: {
       ...DEFAULT_SETTINGS.moomooUs,
-      ...(saved.moomooUs || {}),
+      ...(migrated.moomooUs || {}),
     },
-    bursa: {
-      ...DEFAULT_SETTINGS.bursa,
-      ...(saved.bursa || {}),
+    bursaFees: {
+      ...DEFAULT_SETTINGS.bursaFees,
+      ...(migrated.bursaFees || {}),
     },
   };
 };
@@ -46,7 +80,8 @@ export const getSettings = () => {
 };
 
 /**
- * Saves settings to localStorage and optionally logs in development.
+ * Saves settings to localStorage. Merges before writing so partial saves
+ * never lose keys added in newer app versions.
  * Returns true on success.
  */
 export const saveSettings = (settings) => {

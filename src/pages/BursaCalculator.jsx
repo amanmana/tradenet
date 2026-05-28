@@ -64,7 +64,7 @@ export default function BursaCalculator() {
     const userSettings = getSettings();
     setSettings(userSettings);
 
-    const bPresets = userSettings.bursa;
+    const bPresets = userSettings.bursaFees;
     const hasActivePresets = Object.values(bPresets).some(v => v > 0);
     setIsFeesCollapsed(!hasActivePresets);
   }, []);
@@ -72,16 +72,16 @@ export default function BursaCalculator() {
   // Auto Estimate Fees
   useEffect(() => {
     if (feeMode === 'auto' && settings && calculationMode === 'planning') {
-      const bPresets = settings.bursa;
+      const bPresets = settings.bursaFees;
       
-      setBuyBrokerage(bPresets.buyBrokerage.toString());
-      setBuyClearing(bPresets.buyClearing.toString());
+      setBuyBrokerage(bPresets.buyBrokerageFee.toString());
+      setBuyClearing(bPresets.buyClearingFee.toString());
       setBuyStampDuty(bPresets.buyStampDuty.toString());
       setBuySst(bPresets.buySst.toString());
       setOtherBuyFee(bPresets.otherBuyFee.toString());
 
-      setSellBrokerage(bPresets.sellBrokerage.toString());
-      setSellClearing(bPresets.sellClearing.toString());
+      setSellBrokerage(bPresets.sellBrokerageFee.toString());
+      setSellClearing(bPresets.sellClearingFee.toString());
       setSellStampDuty(bPresets.sellStampDuty.toString());
       setSellSst(bPresets.sellSst.toString());
       setOtherSellFee(bPresets.otherSellFee.toString());
@@ -199,15 +199,15 @@ export default function BursaCalculator() {
 
     if (settings) {
       setFeeMode('auto');
-      const fees = settings.bursa;
-      setBuyBrokerage(fees.buyBrokerage.toString());
-      setBuyClearing(fees.buyClearing.toString());
+      const fees = settings.bursaFees;
+      setBuyBrokerage(fees.buyBrokerageFee.toString());
+      setBuyClearing(fees.buyClearingFee.toString());
       setBuyStampDuty(fees.buyStampDuty.toString());
       setBuySst(fees.buySst.toString());
       setOtherBuyFee(fees.otherBuyFee.toString());
 
-      setSellBrokerage(fees.sellBrokerage.toString());
-      setSellClearing(fees.sellClearing.toString());
+      setSellBrokerage(fees.sellBrokerageFee.toString());
+      setSellClearing(fees.sellClearingFee.toString());
       setSellStampDuty(fees.sellStampDuty.toString());
       setSellSst(fees.sellSst.toString());
       setOtherSellFee(fees.otherSellFee.toString());
@@ -223,16 +223,16 @@ export default function BursaCalculator() {
   // Reset Fees specifically
   const handleResetFees = () => {
     if (!settings) return;
-    const bPresets = settings.bursa;
+    const bPresets = settings.bursaFees;
     
-    setBuyBrokerage(bPresets.buyBrokerage.toString());
-    setBuyClearing(bPresets.buyClearing.toString());
+    setBuyBrokerage(bPresets.buyBrokerageFee.toString());
+    setBuyClearing(bPresets.buyClearingFee.toString());
     setBuyStampDuty(bPresets.buyStampDuty.toString());
     setBuySst(bPresets.buySst.toString());
     setOtherBuyFee(bPresets.otherBuyFee.toString());
 
-    setSellBrokerage(bPresets.sellBrokerage.toString());
-    setSellClearing(bPresets.sellClearing.toString());
+    setSellBrokerage(bPresets.sellBrokerageFee.toString());
+    setSellClearing(bPresets.sellClearingFee.toString());
     setSellStampDuty(bPresets.sellStampDuty.toString());
     setSellSst(bPresets.sellSst.toString());
     setOtherSellFee(bPresets.otherSellFee.toString());
