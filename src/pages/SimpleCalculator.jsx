@@ -4,14 +4,32 @@ import { formatCurrency, formatPercent } from '../utils/formatters';
 import SectionCard from '../components/SectionCard';
 import InputField from '../components/InputField';
 import ResultCard from '../components/ResultCard';
+import { Loader2, TrendingUp, Info } from 'lucide-react';
+import { fetchYahooLastPrice } from '../services/quoteService';
 
 export default function SimpleCalculator() {
   const [settings, setSettings] = useState(null);
   
   const [buyPrice, setBuyPrice] = useState('');
   const [sellPrice, setSellPrice] = useState('');
+  const [ticker, setTicker] = useState('');
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [quoteError, setQuoteError] = useState(null);
   const [capitalType, setCapitalType] = useState('lot'); // 'lot' or 'usd'
   const [capitalValue, setCapitalValue] = useState('');
+
+  const handleFetchLastPrice = async () => {
+    if (!ticker.trim()) return;
+    setQuoteLoading(true);
+    setQuoteError(null);
+    const res = await fetchYahooLastPrice(ticker);
+    setQuoteLoading(false);
+    if (res.ok) {
+      setSellPrice(res.price.toString());
+    } else {
+      setQuoteError(res.error);
+    }
+  };
 
   useEffect(() => {
     setSettings(getSettings());
@@ -55,6 +73,16 @@ export default function SimpleCalculator() {
           <SectionCard title="Trade Details" subtitle="Enter your basic trade details">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <InputField
+                label="Ticker Symbol"
+                id="ticker"
+                placeholder="e.g. AAPL"
+                value={ticker}
+                onChange={(e) => setTicker(e.target.value)}
+                className="sm:col-span-2"
+                tooltip="The stock ticker symbol representing the equity (e.g. AAPL, TSLA, MSFT)."
+              />
+
+              <InputField
                 label="Buy Price (USD)"
                 id="buyPrice"
                 type="number"
@@ -65,16 +93,49 @@ export default function SimpleCalculator() {
                 prefix="$"
               />
 
-              <InputField
-                label="Sell Price (USD)"
-                id="sellPrice"
-                type="number"
-                step="0.0001"
-                placeholder="0.00"
-                value={sellPrice}
-                onChange={(e) => setSellPrice(e.target.value)}
-                prefix="$"
-              />
+              <div className="flex flex-col space-y-1.5 w-full">
+                <div className="flex items-center space-x-1.5 mb-0.5">
+                  <label htmlFor="sellPrice" className="text-xs font-semibold text-slate-400 tracking-wider uppercase">
+                    Sell Price (USD)
+                  </label>
+                </div>
+                
+                <div className="flex space-x-2">
+                  <div className="relative flex-1">
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 font-medium select-none pointer-events-none text-sm">
+                      $
+                    </div>
+                    <input
+                      id="sellPrice"
+                      type="number"
+                      step="0.0001"
+                      placeholder="0.00"
+                      value={sellPrice}
+                      onChange={(e) => setSellPrice(e.target.value)}
+                      className="w-full bg-slate-950/60 border border-slate-800/80 hover:border-slate-700/60 focus:border-emerald-500/80 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all duration-200"
+                    />
+                  </div>
+                  
+                  <button
+                    type="button"
+                    onClick={handleFetchLastPrice}
+                    disabled={quoteLoading || !ticker.trim()}
+                    className="px-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-450 hover:text-slate-200 hover:bg-slate-900 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center shrink-0"
+                    title="Use last price from Yahoo Finance"
+                  >
+                    {quoteLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                    ) : (
+                      <TrendingUp className="w-4 h-4 text-emerald-400" />
+                    )}
+                  </button>
+                </div>
+                {quoteError && (
+                  <span className="text-[10px] text-red-400 mt-1 leading-tight block">
+                    ⚠️ {quoteError}
+                  </span>
+                )}
+              </div>
 
               <div className="sm:col-span-2 grid grid-cols-2 gap-4">
                 <div className="flex flex-col space-y-1.5 w-full">
