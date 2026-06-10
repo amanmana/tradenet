@@ -18,6 +18,7 @@ export default function SimpleCalculator() {
   const [quoteError, setQuoteError] = useState(null);
   const [quotePriceUsed, setQuotePriceUsed] = useState(null);
   const [quoteSymbol, setQuoteSymbol] = useState(null);
+  const [quoteShortName, setQuoteShortName] = useState(null);
   const [quoteFetchedAt, setQuoteFetchedAt] = useState(null);
   const [sellPriceWasFetched, setSellPriceWasFetched] = useState(false);
   const [quoteManualEdited, setQuoteManualEdited] = useState(false);
@@ -29,6 +30,12 @@ export default function SimpleCalculator() {
   const [trailingPrice, setTrailingPrice] = useState('');
   const [trailingLoading, setTrailingLoading] = useState(false);
   const [trailingError, setTrailingError] = useState(null);
+  const [trailingPriceWasFetched, setTrailingPriceWasFetched] = useState(false);
+  const [trailingManualEdited, setTrailingManualEdited] = useState(false);
+  const [trailingQuotePrice, setTrailingQuotePrice] = useState(null);
+  const [trailingQuoteSymbol, setTrailingQuoteSymbol] = useState(null);
+  const [trailingQuoteShortName, setTrailingQuoteShortName] = useState(null);
+  const [trailingQuoteFetchedAt, setTrailingQuoteFetchedAt] = useState(null);
 
   const handleFetchTrailingPrice = async () => {
     if (!trailingTicker.trim()) return;
@@ -38,6 +45,12 @@ export default function SimpleCalculator() {
     setTrailingLoading(false);
     if (res.ok) {
       setTrailingPrice(res.price.toString());
+      setTrailingQuoteFetchedAt(res.fetchedAt);
+      setTrailingQuotePrice(res.price);
+      setTrailingQuoteSymbol(res.symbol);
+      setTrailingQuoteShortName(res.shortName);
+      setTrailingPriceWasFetched(true);
+      setTrailingManualEdited(false);
     } else {
       setTrailingError(res.error);
     }
@@ -54,6 +67,7 @@ export default function SimpleCalculator() {
       setQuoteFetchedAt(res.fetchedAt);
       setQuotePriceUsed(res.price);
       setQuoteSymbol(res.symbol);
+      setQuoteShortName(res.shortName);
       setSellPriceWasFetched(true);
       setQuoteManualEdited(false);
     } else {
@@ -198,7 +212,7 @@ export default function SimpleCalculator() {
                 </div>
                 {sellPriceWasFetched && !quoteError && (
                   <span className="text-[10px] text-emerald-450 mt-1 leading-tight block font-medium">
-                    ✓ Last price from Yahoo Finance: ${quotePriceUsed?.toFixed(4)} • {quoteSymbol} • fetched {new Date(quoteFetchedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                    ✓ Last price from Yahoo Finance: ${quotePriceUsed?.toFixed(4)} • {quoteSymbol}{quoteShortName ? ` (${quoteShortName})` : ''} • fetched {new Date(quoteFetchedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 )}
                 {quoteManualEdited && !sellPriceWasFetched && (
@@ -326,7 +340,13 @@ export default function SimpleCalculator() {
                         step="0.0001"
                         placeholder="0.00"
                         value={trailingPrice}
-                        onChange={(e) => setTrailingPrice(e.target.value)}
+                        onChange={(e) => {
+                          setTrailingPrice(e.target.value);
+                          if (trailingPriceWasFetched) {
+                            setTrailingManualEdited(true);
+                            setTrailingPriceWasFetched(false);
+                          }
+                        }}
                         className="w-full bg-slate-950/60 border border-slate-800/80 hover:border-slate-700/60 focus:border-emerald-500/80 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all duration-200"
                       />
                     </div>
@@ -345,6 +365,16 @@ export default function SimpleCalculator() {
                       )}
                     </button>
                   </div>
+                  {trailingPriceWasFetched && !trailingError && (
+                    <span className="text-[10px] text-emerald-450 mt-1 leading-tight block font-medium">
+                      ✓ Last price from Yahoo Finance: ${trailingQuotePrice?.toFixed(4)} • {trailingQuoteSymbol}{trailingQuoteShortName ? ` (${trailingQuoteShortName})` : ''} • fetched {new Date(trailingQuoteFetchedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  )}
+                  {trailingManualEdited && !trailingPriceWasFetched && (
+                    <span className="text-[10px] text-slate-500 mt-1 leading-tight block font-medium">
+                      ✏️ Manual reference price entered.
+                    </span>
+                  )}
                   {trailingError && (
                     <span className="text-[10px] text-red-400 mt-1 leading-tight block">
                       ⚠️ {trailingError}
