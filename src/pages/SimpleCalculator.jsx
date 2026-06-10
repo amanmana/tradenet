@@ -15,6 +15,11 @@ export default function SimpleCalculator() {
   const [ticker, setTicker] = useState('');
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState(null);
+  const [quotePriceUsed, setQuotePriceUsed] = useState(null);
+  const [quoteSymbol, setQuoteSymbol] = useState(null);
+  const [quoteFetchedAt, setQuoteFetchedAt] = useState(null);
+  const [sellPriceWasFetched, setSellPriceWasFetched] = useState(false);
+  const [quoteManualEdited, setQuoteManualEdited] = useState(false);
   const [capitalType, setCapitalType] = useState('lot'); // 'lot' or 'usd'
   const [capitalValue, setCapitalValue] = useState('');
 
@@ -26,6 +31,11 @@ export default function SimpleCalculator() {
     setQuoteLoading(false);
     if (res.ok) {
       setSellPrice(res.price.toString());
+      setQuoteFetchedAt(res.fetchedAt);
+      setQuotePriceUsed(res.price);
+      setQuoteSymbol(res.symbol);
+      setSellPriceWasFetched(true);
+      setQuoteManualEdited(false);
     } else {
       setQuoteError(res.error);
     }
@@ -111,7 +121,13 @@ export default function SimpleCalculator() {
                       step="0.0001"
                       placeholder="0.00"
                       value={sellPrice}
-                      onChange={(e) => setSellPrice(e.target.value)}
+                      onChange={(e) => {
+                        setSellPrice(e.target.value);
+                        if (sellPriceWasFetched) {
+                          setQuoteManualEdited(true);
+                          setSellPriceWasFetched(false);
+                        }
+                      }}
                       className="w-full bg-slate-950/60 border border-slate-800/80 hover:border-slate-700/60 focus:border-emerald-500/80 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all duration-200"
                     />
                   </div>
@@ -130,6 +146,16 @@ export default function SimpleCalculator() {
                     )}
                   </button>
                 </div>
+                {sellPriceWasFetched && !quoteError && (
+                  <span className="text-[10px] text-emerald-450 mt-1 leading-tight block font-medium">
+                    ✓ Last price from Yahoo Finance: ${quotePriceUsed?.toFixed(4)} • {quoteSymbol} • fetched {new Date(quoteFetchedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                )}
+                {quoteManualEdited && !sellPriceWasFetched && (
+                  <span className="text-[10px] text-slate-500 mt-1 leading-tight block font-medium">
+                    ✏️ Manual sell price entered.
+                  </span>
+                )}
                 {quoteError && (
                   <span className="text-[10px] text-red-400 mt-1 leading-tight block">
                     ⚠️ {quoteError}
