@@ -9,6 +9,7 @@ import { fetchYahooLastPrice } from '../services/quoteService';
 
 export default function SimpleCalculator() {
   const [settings, setSettings] = useState(null);
+  const [activeTab, setActiveTab] = useState('profit'); // 'profit' or 'trailing'
   
   const [buyPrice, setBuyPrice] = useState('');
   const [sellPrice, setSellPrice] = useState('');
@@ -89,17 +90,47 @@ export default function SimpleCalculator() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-slate-900 pb-4">
-        <h1 className="text-2xl md:text-3xl font-extrabold text-white">Simple Calculator</h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Quickly calculate profit or loss in USD and MYR without complex fees.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-900 pb-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-white">Simple Calculator</h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Quickly calculate profit/loss or find trailing stop levels.
+          </p>
+        </div>
+
+        {/* Tab Switcher */}
+        <div className="flex bg-slate-950/60 p-1 rounded-xl border border-slate-800/80 shadow-inner w-full md:w-auto shrink-0 select-none">
+          <button
+            type="button"
+            onClick={() => setActiveTab('profit')}
+            className={`flex-1 md:flex-none py-1.5 px-3.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'profit'
+                ? 'bg-slate-900 border border-slate-700/50 text-emerald-450 shadow-md shadow-emerald-500/5'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Profit / Loss
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('trailing')}
+            className={`flex-1 md:flex-none py-1.5 px-3.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'trailing'
+                ? 'bg-slate-900 border border-slate-700/50 text-emerald-450 shadow-md shadow-emerald-500/5'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Trailing Stop
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column - Input Form */}
-        <div className="lg:col-span-7 space-y-6">
-          <SectionCard title="Trade Details" subtitle="Enter your basic trade details">
+        {activeTab === 'profit' ? (
+          <>
+            {/* Left Column - Input Form */}
+            <div className="lg:col-span-7 space-y-6">
+              <SectionCard title="Trade Details" subtitle="Enter your basic trade details">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <InputField
                 label="Ticker Symbol"
@@ -226,8 +257,47 @@ export default function SimpleCalculator() {
               </div>
             </div>
           </SectionCard>
+            </div>
 
-          <SectionCard title="Trailing Stop Reference" subtitle="Calculate trailing stop prices based on percentage drops">
+            {/* Right Column - Results */}
+            <div className="lg:col-span-5 space-y-6 sticky top-24">
+              <SectionCard title="Results" subtitle="Calculated based on your inputs">
+                <div className="space-y-4">
+                  <ResultCard
+                    label="Total Shares"
+                    value={shares.toFixed(2)}
+                    currency=""
+                  />
+                  <ResultCard
+                    label="Profit / Loss (USD)"
+                    value={formatCurrency(Math.abs(profitLossUSD), '', 2)}
+                    currency="$"
+                    highlight={true}
+                    highlightType={profitLossUSD >= 0 ? 'profit' : 'loss'}
+                    prefix={profitLossUSD >= 0 ? '+' : '-'}
+                  />
+                  <ResultCard
+                    label={`Profit / Loss (MYR) @ ${fxRate}`}
+                    value={formatCurrency(Math.abs(profitLossMYR), '', 2)}
+                    currency="RM"
+                    highlight={true}
+                    highlightType={profitLossMYR >= 0 ? 'profit' : 'loss'}
+                    prefix={profitLossMYR >= 0 ? '+' : '-'}
+                  />
+                  <ResultCard
+                    label="ROI (%)"
+                    value={formatPercent(roi)}
+                    highlight={true}
+                    highlightType={roi >= 0 ? 'profit' : 'loss'}
+                    prefix={roi >= 0 ? '+' : ''}
+                  />
+                </div>
+              </SectionCard>
+            </div>
+          </>
+        ) : (
+          <div className="lg:col-span-12 space-y-6">
+            <SectionCard title="Trailing Stop Reference" subtitle="Calculate trailing stop prices based on percentage drops">
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <InputField
@@ -301,42 +371,7 @@ export default function SimpleCalculator() {
             </div>
           </SectionCard>
         </div>
-
-        {/* Right Column - Results */}
-        <div className="lg:col-span-5 space-y-6 sticky top-24">
-          <SectionCard title="Results" subtitle="Calculated based on your inputs">
-            <div className="space-y-4">
-              <ResultCard
-                label="Total Shares"
-                value={shares.toFixed(2)}
-                currency=""
-              />
-              <ResultCard
-                label="Profit / Loss (USD)"
-                value={formatCurrency(Math.abs(profitLossUSD), '', 2)}
-                currency="$"
-                highlight={true}
-                highlightType={profitLossUSD >= 0 ? 'profit' : 'loss'}
-                prefix={profitLossUSD >= 0 ? '+' : '-'}
-              />
-              <ResultCard
-                label={`Profit / Loss (MYR) @ ${fxRate}`}
-                value={formatCurrency(Math.abs(profitLossMYR), '', 2)}
-                currency="RM"
-                highlight={true}
-                highlightType={profitLossMYR >= 0 ? 'profit' : 'loss'}
-                prefix={profitLossMYR >= 0 ? '+' : '-'}
-              />
-              <ResultCard
-                label="ROI (%)"
-                value={formatPercent(roi)}
-                highlight={true}
-                highlightType={roi >= 0 ? 'profit' : 'loss'}
-                prefix={roi >= 0 ? '+' : ''}
-              />
-            </div>
-          </SectionCard>
-        </div>
+        )}
       </div>
     </div>
   );
