@@ -25,6 +25,7 @@ export default function SimpleCalculator() {
   const [quoteManualEdited, setQuoteManualEdited] = useState(false);
   const [capitalType, setCapitalType] = useState('shares'); // 'shares' or 'usd'
   const [capitalValue, setCapitalValue] = useState('');
+  const [customFxRate, setCustomFxRate] = useState('');
 
   // Trailing Stop Reference States
   const [trailingTicker, setTrailingTicker] = useState('');
@@ -110,7 +111,7 @@ export default function SimpleCalculator() {
   const roi = totalBuyCostUSD > 0 ? (profitLossUSD / totalBuyCostUSD) * 100 : 0;
 
   // Convert to MYR
-  const fxRate = settings?.sellFxRate || 4.40;
+  const fxRate = parseFloat(customFxRate) || settings?.sellFxRate || 4.40;
   const profitLossMYR = profitLossUSD * fxRate;
 
   return (
@@ -263,7 +264,7 @@ export default function SimpleCalculator() {
                 )}
               </div>
 
-              <div className="sm:col-span-2 grid grid-cols-2 gap-4">
+              <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="flex flex-col space-y-1.5 w-full">
                   <label htmlFor="capitalType" className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-0.5">
                     Capital Type
@@ -303,6 +304,17 @@ export default function SimpleCalculator() {
                   value={capitalValue}
                   onChange={(e) => setCapitalValue(e.target.value)}
                   prefix={capitalType === 'usd' ? '$' : '#'}
+                />
+
+                <InputField
+                  label="FX Rate (USD to MYR)"
+                  id="customFxRate"
+                  type="number"
+                  step="0.0001"
+                  placeholder={settings?.sellFxRate?.toString() || "4.40"}
+                  value={customFxRate}
+                  onChange={(e) => setCustomFxRate(e.target.value)}
+                  tooltip="Override the default exchange rate from your Settings."
                 />
               </div>
             </div>
