@@ -222,3 +222,16 @@ export const addRecentTicker = (ticker) => {
     return [];
   }
 };
+
+/**
+ * Clears the list of recently used ticker symbols.
+ */
+export const clearRecentTickers = () => {
+  try {
+    localStorage.removeItem(STORAGE_KEYS.RECENT_TICKERS);
+    return [];
+  } catch (error) {
+    console.error('[TradeNet] Error clearing recent tickers:', error);
+    return [];
+  }
+};

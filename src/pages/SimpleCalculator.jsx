@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { getSettings, getRecentTickers, addRecentTicker } from '../utils/storage';
+import { getSettings, getRecentTickers, addRecentTicker, clearRecentTickers } from '../utils/storage';
 import { formatCurrency, formatPercent } from '../utils/formatters';
 import SectionCard from '../components/SectionCard';
 import InputField from '../components/InputField';
 import ResultCard from '../components/ResultCard';
-import { Loader2, TrendingUp, Info } from 'lucide-react';
+import { Loader2, TrendingUp, Info, Trash2 } from 'lucide-react';
 import { fetchYahooLastPrice } from '../services/quoteService';
 
 export default function SimpleCalculator() {
@@ -78,6 +78,11 @@ export default function SimpleCalculator() {
     } else {
       setQuoteError(res.error);
     }
+  };
+
+  const handleClearTickers = () => {
+    const updated = clearRecentTickers();
+    setRecentTickers(updated);
   };
 
   useEffect(() => {
@@ -175,6 +180,14 @@ export default function SimpleCalculator() {
                         {t}
                       </button>
                     ))}
+                    <button
+                      type="button"
+                      onClick={handleClearTickers}
+                      className="p-1 rounded-full text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-colors ml-1"
+                      title="Clear recent tickers"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 )}
               </div>
@@ -359,6 +372,14 @@ export default function SimpleCalculator() {
                           {t}
                         </button>
                       ))}
+                      <button
+                        type="button"
+                        onClick={handleClearTickers}
+                        className="p-1 rounded-full text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-colors ml-1"
+                        title="Clear recent tickers"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   )}
                 </div>
