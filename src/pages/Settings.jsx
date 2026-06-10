@@ -267,25 +267,14 @@ export default function Settings() {
         <SectionCard title="General Preferences" subtitle="Global rates and formatting options.">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
             <InputField
-              label="Default Buy FX Rate"
-              id="buyFxRate"
+              label="Default FX Rate"
+              id="fxRate"
               type="number"
               step="0.0001"
-              value={settings.buyFxRate}
-              onChange={(e) => handleChange(null, 'buyFxRate', parseFloat(e.target.value) || 0)}
+              value={settings.fxRate}
+              onChange={(e) => handleChange(null, 'fxRate', parseFloat(e.target.value) || 0)}
               prefix="RM"
-              helperText="1 USD = ? MYR (Bank rate when buying US shares)"
-            />
-
-            <InputField
-              label="Default Sell FX Rate"
-              id="sellFxRate"
-              type="number"
-              step="0.0001"
-              value={settings.sellFxRate}
-              onChange={(e) => handleChange(null, 'sellFxRate', parseFloat(e.target.value) || 0)}
-              prefix="RM"
-              helperText="1 USD = ? MYR (Bank rate when selling US shares)"
+              helperText="1 USD = ? MYR"
             />
 
             <div className="flex flex-col space-y-1.5">

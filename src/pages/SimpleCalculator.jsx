@@ -111,7 +111,7 @@ export default function SimpleCalculator() {
   const roi = totalBuyCostUSD > 0 ? (profitLossUSD / totalBuyCostUSD) * 100 : 0;
 
   // Convert to MYR
-  const fxRate = parseFloat(customFxRate) || settings?.sellFxRate || 4.40;
+  const fxRate = parseFloat(customFxRate) || settings?.fxRate || 4.40;
   const profitLossMYR = profitLossUSD * fxRate;
 
   return (
@@ -311,7 +311,7 @@ export default function SimpleCalculator() {
                   id="customFxRate"
                   type="number"
                   step="0.0001"
-                  placeholder={settings?.sellFxRate?.toString() || "4.40"}
+                  placeholder={settings?.fxRate?.toString() || "4.40"}
                   value={customFxRate}
                   onChange={(e) => setCustomFxRate(e.target.value)}
                   tooltip="Override the default exchange rate from your Settings."

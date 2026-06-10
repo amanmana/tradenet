@@ -1,6 +1,5 @@
 export const DEFAULT_SETTINGS = {
-  buyFxRate: 4.40,
-  sellFxRate: 4.40,
+  fxRate: 4.40,
   viewCurrency: 'both', // 'usd', 'myr', 'both'
   usBrokerPreset: 'MooMoo',
   darkMode: true,

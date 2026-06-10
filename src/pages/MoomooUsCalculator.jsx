@@ -29,9 +29,7 @@ export default function MoomooUsCalculator() {
   const [quantity, setQuantity] = useState('');
   const [capitalType, setCapitalType] = useState('shares'); // 'shares' or 'usd'
   const [capitalUsd, setCapitalUsd] = useState('');
-  const [buyFx, setBuyFx] = useState('');
-  const [sellFx, setSellFx] = useState('');
-  const [useSameFx, setUseSameFx] = useState(true);
+  const [fxRate, setFxRate] = useState('');
   
   // Fees (Always Absolute USD values on this page)
   const [buyCommission, setBuyCommission] = useState('0');
@@ -107,9 +105,8 @@ export default function MoomooUsCalculator() {
     const userSettings = getSettings();
     setSettings(userSettings);
     
-    // Set exchange rates
-    setBuyFx(userSettings.buyFxRate.toString());
-    setSellFx(userSettings.sellFxRate.toString());
+    // Set exchange rate
+    setFxRate((userSettings.fxRate || userSettings.buyFxRate || 4.40).toString());
     
     // Check if defaults presets exist to determine default fees collapse
     const usPresets = userSettings.moomooUs;
@@ -162,13 +159,11 @@ export default function MoomooUsCalculator() {
     if (calculationMode === 'planning') {
       const qty = parseFloat(quantity);
       const bPrice = parseFloat(buyPrice);
-      const bRate = parseFloat(buyFx);
-      const sRate = parseFloat(sellFx);
+      const rate = parseFloat(fxRate);
 
       if (isNaN(qty) || qty <= 0) newErrors.quantity = 'Quantity must be more than 0';
       if (isNaN(bPrice) || bPrice <= 0) newErrors.buyPrice = 'Buy price must be more than 0';
-      if (isNaN(bRate) || bRate <= 0) newErrors.buyFx = 'FX rate must be more than 0';
-      if (isNaN(sRate) || sRate <= 0) newErrors.sellFx = 'FX rate must be more than 0';
+      if (isNaN(rate) || rate <= 0) newErrors.fxRate = 'FX rate must be more than 0';
 
       const sPrice = parseFloat(sellPrice);
       if (!isSubmitting) {
@@ -184,13 +179,11 @@ export default function MoomooUsCalculator() {
       // Contract Mode validations
       const buyCost = parseFloat(contractBuyCost);
       const sellProceeds = parseFloat(contractSellProceeds);
-      const bRate = parseFloat(buyFx);
-      const sRate = parseFloat(sellFx);
+      const rate = parseFloat(fxRate);
 
       if (isNaN(buyCost) || buyCost <= 0) newErrors.contractBuyCost = 'Total buy cost is required';
       if (isNaN(sellProceeds) || sellProceeds <= 0) newErrors.contractSellProceeds = 'Total sell proceeds is required';
-      if (isNaN(bRate) || bRate <= 0) newErrors.buyFx = 'FX rate must be more than 0';
-      if (isNaN(sRate) || sRate <= 0) newErrors.sellFx = 'FX rate must be more than 0';
+      if (isNaN(rate) || rate <= 0) newErrors.fxRate = 'FX rate must be more than 0';
     }
 
     setErrors(newErrors);
@@ -199,18 +192,17 @@ export default function MoomooUsCalculator() {
 
   // Live trigger validations
   useEffect(() => {
-    if (buyPrice || quantity || sellPrice || buyFx || sellFx || contractBuyCost || contractSellProceeds) {
+    if (buyPrice || quantity || sellPrice || fxRate || contractBuyCost || contractSellProceeds) {
       validate(false);
     }
-  }, [buyPrice, quantity, sellPrice, buyFx, sellFx, contractBuyCost, contractSellProceeds, calculationMode]);
+  }, [buyPrice, quantity, sellPrice, fxRate, contractBuyCost, contractSellProceeds, calculationMode]);
 
   // Form inputs object
   const getInputsObj = () => ({
     buyPrice,
     sellPrice: sellPrice || '0',
     quantity,
-    buyFx,
-    sellFx,
+    fxRate,
     buyCommission,
     buyPlatformFee,
     buySettlementFee,
@@ -239,12 +231,11 @@ export default function MoomooUsCalculator() {
     // Contract Note calculations
     const costUsd = parseFloat(contractBuyCost) || 0;
     const proceedsUsd = parseFloat(contractSellProceeds) || 0;
-    const bFx = parseFloat(buyFx) || 0;
-    const sFx = parseFloat(sellFx) || 0;
+    const rate = parseFloat(fxRate) || 0;
     
     const netProfitUsd = proceedsUsd - costUsd;
-    const buyCostMyr = costUsd * bFx;
-    const sellProceedsMyr = proceedsUsd * sFx;
+    const buyCostMyr = costUsd * rate;
+    const sellProceedsMyr = proceedsUsd * rate;
     const netProfitMyr = sellProceedsMyr - buyCostMyr;
     const roiPercent = costUsd > 0 ? (netProfitUsd / costUsd) * 100 : 0;
     
@@ -288,8 +279,7 @@ export default function MoomooUsCalculator() {
     setContractNotes('');
     
     if (settings) {
-      setBuyFx(settings.buyFxRate.toString());
-      setSellFx(settings.sellFxRate.toString());
+      setFxRate((settings.fxRate || settings.buyFxRate || 4.40).toString());
       setFeeMode('auto');
       
       const fees = settings.moomooUs;
@@ -387,8 +377,7 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
       setBuyPrice(lastTrade.buyPrice.toString());
       setSellPrice(lastTrade.sellPrice.toString());
       setQuantity(lastTrade.quantity.toString());
-      setBuyFx(lastTrade.buyFx.toString());
-      setSellFx(lastTrade.sellFx.toString());
+      setFxRate(lastTrade.fxRate?.toString() || lastTrade.buyFx?.toString() || "4.40");
       
       setLoadSuccess(true);
       setTimeout(() => setLoadSuccess(false), 2500);
@@ -414,8 +403,7 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
       buyPrice: calculationMode === 'planning' ? parseFloat(buyPrice) : parseFloat(contractBuyCost) / (parseFloat(quantity) || 1),
       sellPrice: calculationMode === 'planning' ? parseFloat(sellPrice) : parseFloat(contractSellProceeds) / (parseFloat(quantity) || 1),
       quantity: parseFloat(quantity) || 1,
-      buyFx: parseFloat(buyFx),
-      sellFx: parseFloat(sellFx),
+      fxRate: parseFloat(fxRate),
       totalFeesUsd: results.totalBuyCostUsd - results.buyValueUsd + results.sellValueUsd - results.totalSellProceedsUsd,
       netProfitUsd: results.netProfitUsd,
       netProfitMyr: results.netProfitMyr,
@@ -784,60 +772,19 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
 
                   {/* FX Rates Group */}
                   <div className="sm:col-span-2 flex flex-col space-y-2 border-t border-slate-900 pt-3 mt-1">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-slate-400 tracking-wider uppercase">
-                        Exchange Rates (USD/MYR)
-                      </label>
-                      <label className="flex items-center space-x-2 text-xs text-slate-450 hover:text-slate-200 cursor-pointer transition-colors select-none">
-                        <input
-                          type="checkbox"
-                          checked={useSameFx}
-                          onChange={(e) => {
-                            setUseSameFx(e.target.checked);
-                            if (e.target.checked) {
-                              setSellFx(buyFx);
-                            }
-                          }}
-                          className="rounded border-slate-800 text-emerald-500 focus:ring-emerald-500 bg-slate-950 w-3.5 h-3.5"
-                        />
-                        <span>Use same FX for buy and sell</span>
-                      </label>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                      <InputField
-                        label="Buy FX Rate"
-                        id="buyFx"
-                        type="number"
-                        step="0.0001"
-                        placeholder="4.40"
-                        value={buyFx}
-                        onChange={(e) => {
-                          setBuyFx(e.target.value);
-                          if (useSameFx) {
-                            setSellFx(e.target.value);
-                          }
-                        }}
-                        error={errors.buyFx}
-                        prefix="RM"
-                        helperText="USD to MYR"
-                        tooltip="The conversion exchange rate from USD to MYR when you bought the shares."
-                      />
-                      <InputField
-                        label="Sell FX Rate"
-                        id="sellFx"
-                        type="number"
-                        step="0.0001"
-                        placeholder="4.40"
-                        value={sellFx}
-                        onChange={(e) => setSellFx(e.target.value)}
-                        error={errors.sellFx}
-                        prefix="RM"
-                        helperText="USD to MYR"
-                        disabled={useSameFx}
-                        tooltip="The conversion exchange rate from USD to MYR when you sold the shares."
-                      />
-                    </div>
+                    <InputField
+                      label="FX Rate"
+                      id="fxRate"
+                      type="number"
+                      step="0.0001"
+                      placeholder="4.40"
+                      value={fxRate}
+                      onChange={(e) => setFxRate(e.target.value)}
+                      error={errors.fxRate}
+                      prefix="RM"
+                      helperText="1 USD = ? MYR"
+                      tooltip="The conversion exchange rate from USD to MYR."
+                    />
                   </div>
                 </div>
               </SectionCard>
@@ -898,30 +845,18 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
                     tooltip="Enter quantity to calculate average prices and break-even targets."
                   />
 
-                  <div className="grid grid-cols-2 gap-3 sm:col-span-2 border-t border-slate-900 pt-3">
+                  <div className="sm:col-span-2 border-t border-slate-900 pt-3">
                     <InputField
-                      label="Buy FX Rate"
-                      id="buyFx"
+                      label="FX Rate"
+                      id="fxRate"
                       type="number"
                       step="0.0001"
                       placeholder="4.40"
-                      value={buyFx}
-                      onChange={(e) => setBuyFx(e.target.value)}
-                      error={errors.buyFx}
+                      value={fxRate}
+                      onChange={(e) => setFxRate(e.target.value)}
+                      error={errors.fxRate}
                       prefix="RM"
-                      helperText="USD to MYR"
-                    />
-                    <InputField
-                      label="Sell FX Rate"
-                      id="sellFx"
-                      type="number"
-                      step="0.0001"
-                      placeholder="4.40"
-                      value={sellFx}
-                      onChange={(e) => setSellFx(e.target.value)}
-                      error={errors.sellFx}
-                      prefix="RM"
-                      helperText="USD to MYR"
+                      helperText="1 USD = ? MYR"
                     />
                   </div>
 

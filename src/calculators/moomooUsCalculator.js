@@ -7,8 +7,7 @@ export const calculateMoomooUsTrade = (inputs) => {
   const buyPrice = parseFloat(inputs.buyPrice) || 0;
   const sellPrice = parseFloat(inputs.sellPrice) || 0;
   const quantity = parseFloat(inputs.quantity) || 0;
-  const buyFx = parseFloat(inputs.buyFx) || 0;
-  const sellFx = parseFloat(inputs.sellFx) || 0;
+  const fxRate = parseFloat(inputs.fxRate) || 0;
 
   // Fees
   const buyCommission = parseFloat(inputs.buyCommission) || 0;
@@ -38,8 +37,8 @@ export const calculateMoomooUsTrade = (inputs) => {
   
   const roiPercent = totalBuyCostUsd > 0 ? (netProfitUsd / totalBuyCostUsd) * 100 : 0;
 
-  const buyCostMyr = totalBuyCostUsd * buyFx;
-  const sellProceedsMyr = totalSellProceedsUsd * sellFx;
+  const buyCostMyr = totalBuyCostUsd * fxRate;
+  const sellProceedsMyr = totalSellProceedsUsd * fxRate;
   const netProfitMyr = sellProceedsMyr - buyCostMyr;
 
   const secFeeRate = parseFloat(inputs.secFeeRate) || 0;
@@ -71,7 +70,7 @@ export const calculateMoomooUsTrade = (inputs) => {
 export const calculateMoomooUsTarget = (inputs, tradeResults) => {
   const buyPrice = parseFloat(inputs.buyPrice) || 0;
   const quantity = parseFloat(inputs.quantity) || 0;
-  const sellFx = parseFloat(inputs.sellFx) || 0;
+  const fxRate = parseFloat(inputs.fxRate) || 0;
 
   const totalBuyCostUsd = tradeResults.totalBuyCostUsd || 0;
   const totalSellFeesUsd = tradeResults.totalSellFeesUsd || 0;
@@ -109,16 +108,16 @@ export const calculateMoomooUsTarget = (inputs, tradeResults) => {
       const requiredSellValueUsd = (totalBuyCostUsd + sellFeesOtherUsd + targetProfit) / (1 - secFeeRate);
       requiredSellPriceUsd = requiredSellValueUsd / quantity;
       estimatedNetProfitUsd = targetProfit;
-      estimatedNetProfitMyr = targetProfit * sellFx;
+      estimatedNetProfitMyr = targetProfit * fxRate;
     } else {
       // MYR target profit calculation
       const requiredSellProceedsMyr = buyCostMyr + targetProfit;
-      const requiredSellProceedsUsd = sellFx > 0 ? requiredSellProceedsMyr / sellFx : 0;
+      const requiredSellProceedsUsd = fxRate > 0 ? requiredSellProceedsMyr / fxRate : 0;
       // S = (requiredSellProceedsUsd + sellFeesOtherUsd) / (1 - secFeeRate)
       const requiredSellValueUsd = (requiredSellProceedsUsd + sellFeesOtherUsd) / (1 - secFeeRate);
       requiredSellPriceUsd = requiredSellValueUsd / quantity;
       estimatedNetProfitMyr = targetProfit;
-      estimatedNetProfitUsd = sellFx > 0 ? targetProfit / sellFx : 0;
+      estimatedNetProfitUsd = fxRate > 0 ? targetProfit / fxRate : 0;
     }
   } else if (targetMode === 'cash') {
     if (targetCurrency === 'USD') {
@@ -127,14 +126,14 @@ export const calculateMoomooUsTarget = (inputs, tradeResults) => {
       const requiredSellValueUsd = (targetProfit + sellFeesOtherUsd) / (1 - secFeeRate);
       requiredSellPriceUsd = requiredSellValueUsd / quantity;
       estimatedNetProfitUsd = targetProfit - totalBuyCostUsd;
-      estimatedNetProfitMyr = estimatedNetProfitUsd * sellFx;
+      estimatedNetProfitMyr = estimatedNetProfitUsd * fxRate;
     } else {
       // Final Cash in MYR
-      const requiredSellProceedsUsd = sellFx > 0 ? targetProfit / sellFx : 0;
+      const requiredSellProceedsUsd = fxRate > 0 ? targetProfit / fxRate : 0;
       const requiredSellValueUsd = (requiredSellProceedsUsd + sellFeesOtherUsd) / (1 - secFeeRate);
       requiredSellPriceUsd = requiredSellValueUsd / quantity;
       estimatedNetProfitMyr = targetProfit - buyCostMyr;
-      estimatedNetProfitUsd = sellFx > 0 ? estimatedNetProfitMyr / sellFx : 0;
+      estimatedNetProfitUsd = fxRate > 0 ? estimatedNetProfitMyr / fxRate : 0;
     }
   } else {
     // ROI mode
@@ -142,7 +141,7 @@ export const calculateMoomooUsTarget = (inputs, tradeResults) => {
     const requiredSellValueUsd = (totalBuyCostUsd + sellFeesOtherUsd + targetProfitUsd) / (1 - secFeeRate);
     requiredSellPriceUsd = requiredSellValueUsd / quantity;
     estimatedNetProfitUsd = targetProfitUsd;
-    estimatedNetProfitMyr = targetProfitUsd * sellFx;
+    estimatedNetProfitMyr = targetProfitUsd * fxRate;
   }
 
   const requiredSellValueUsd = requiredSellPriceUsd * quantity;

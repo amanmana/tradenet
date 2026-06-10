@@ -47,6 +47,11 @@ export const mergeWithDefaultSettings = (saved) => {
   if (!saved || typeof saved !== 'object') return { ...DEFAULT_SETTINGS };
 
   const migrated = migrateLegacyBursa({ ...saved });
+  
+  // Migrate old buyFxRate to single fxRate
+  if (migrated.buyFxRate !== undefined && migrated.fxRate === undefined) {
+    migrated.fxRate = migrated.buyFxRate;
+  }
 
   return {
     ...DEFAULT_SETTINGS,
