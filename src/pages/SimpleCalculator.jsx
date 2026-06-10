@@ -78,18 +78,33 @@ export default function SimpleCalculator() {
 
               <div className="sm:col-span-2 grid grid-cols-2 gap-4">
                 <div className="flex flex-col space-y-1.5 w-full">
-                  <label htmlFor="capitalType" className="text-xs font-semibold text-slate-400 tracking-wider uppercase">
+                  <label htmlFor="capitalType" className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-0.5">
                     Capital Type
                   </label>
-                  <select
-                    id="capitalType"
-                    value={capitalType}
-                    onChange={(e) => setCapitalType(e.target.value)}
-                    className="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  >
-                    <option value="lot">Lot (1 Lot = 100 Shares)</option>
-                    <option value="usd">USD ($)</option>
-                  </select>
+                  <div className="flex bg-slate-950/60 p-1 rounded-xl border border-slate-800/80 shadow-inner w-full shrink-0 select-none">
+                    <button
+                      type="button"
+                      onClick={() => setCapitalType('lot')}
+                      className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        capitalType === 'lot'
+                          ? 'bg-slate-900 border border-slate-700/50 text-emerald-450 shadow-md shadow-emerald-500/5'
+                          : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      Lot (x100)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCapitalType('usd')}
+                      className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        capitalType === 'usd'
+                          ? 'bg-slate-900 border border-slate-700/50 text-emerald-450 shadow-md shadow-emerald-500/5'
+                          : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      USD ($)
+                    </button>
+                  </div>
                 </div>
 
                 <InputField
