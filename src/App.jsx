@@ -6,6 +6,7 @@ import MoomooUsCalculator from './pages/MoomooUsCalculator';
 import BursaCalculator from './pages/BursaCalculator';
 import SavedTrades from './pages/SavedTrades';
 import Settings from './pages/Settings';
+import SimpleCalculator from './pages/SimpleCalculator';
 
 /**
  * Main application routing index.
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/moomoo-us" element={<MoomooUsCalculator />} />
           <Route path="/bursa" element={<BursaCalculator />} />
+          <Route path="/simple-calculator" element={<SimpleCalculator />} />
           <Route path="/saved-trades" element={<SavedTrades />} />
           <Route path="/settings" element={<Settings />} />
           {/* Fallback redirection */}

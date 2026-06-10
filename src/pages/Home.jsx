@@ -26,7 +26,31 @@ export default function Home() {
       </div>
 
       {/* Main Calculator Entry Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        {/* Simple Calculator */}
+        <div 
+          onClick={() => navigate('/simple-calculator')}
+          className="group relative cursor-pointer rounded-2xl border border-slate-800/80 bg-slate-900/20 hover:bg-slate-900/40 p-6 shadow-xl hover:border-emerald-500/30 transition-all duration-300 flex flex-col justify-between"
+        >
+          <div className="space-y-4">
+            <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 w-fit">
+              <Calculator className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white group-hover:text-purple-400 transition-colors">
+                Simple Calculator
+              </h2>
+              <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                Quickly calculate profit or loss based on Buy Price, Sell Price, and Capital (in Lots or USD). No complex fees involved.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center text-xs font-semibold text-purple-400 mt-6 group-hover:translate-x-1.5 transition-transform duration-300">
+            <span>Calculate Simple Trade</span>
+            <ArrowRight className="w-4 h-4 ml-1" />
+          </div>
+        </div>
+
         {/* US Calculator */}
         <div 
           onClick={() => navigate('/moomoo-us')}

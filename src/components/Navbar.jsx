@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Menu, X, Landmark, TrendingUp, History, Settings, DollarSign } from 'lucide-react';
+import { Menu, X, Landmark, TrendingUp, History, Settings, DollarSign, Calculator } from 'lucide-react';
 
 /**
  * Responsive top navigation bar.
@@ -9,6 +9,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   const links = [
+    { to: '/simple-calculator', label: 'Simple Calc', icon: Calculator },
     { to: '/moomoo-us', label: 'MooMoo US', icon: DollarSign },
     { to: '/bursa', label: 'Bursa Malaysia', icon: Landmark },
     { to: '/saved-trades', label: 'Saved Trades', icon: History },
