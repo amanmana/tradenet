@@ -27,6 +27,8 @@ export default function MoomooUsCalculator() {
   const [buyPrice, setBuyPrice] = useState('');
   const [sellPrice, setSellPrice] = useState('');
   const [quantity, setQuantity] = useState('');
+  const [capitalType, setCapitalType] = useState('shares'); // 'shares' or 'usd'
+  const [capitalUsd, setCapitalUsd] = useState('');
   const [buyFx, setBuyFx] = useState('');
   const [sellFx, setSellFx] = useState('');
   const [useSameFx, setUseSameFx] = useState(true);
@@ -114,6 +116,19 @@ export default function MoomooUsCalculator() {
     const hasActivePresets = Object.values(usPresets).some(v => v > 0);
     setIsFeesCollapsed(!hasActivePresets);
   }, []);
+
+  // Auto calculate quantity if capital type is USD
+  useEffect(() => {
+    if (capitalType === 'usd') {
+      const bPrice = parseFloat(buyPrice);
+      const cap = parseFloat(capitalUsd);
+      if (bPrice > 0 && cap > 0) {
+        setQuantity((cap / bPrice).toString());
+      } else {
+        setQuantity('0');
+      }
+    }
+  }, [capitalUsd, buyPrice, capitalType]);
 
   // Auto Estimate Fees Calculation
   useEffect(() => {
@@ -266,6 +281,8 @@ export default function MoomooUsCalculator() {
     setBuyPrice('');
     setSellPrice('');
     setQuantity('');
+    setCapitalUsd('');
+    setCapitalType('shares');
     setContractBuyCost('');
     setContractSellProceeds('');
     setContractNotes('');
@@ -703,18 +720,52 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
                     )}
                   </div>
                   
-                  <InputField
-                    label="Quantity"
-                    id="quantity"
-                    type="number"
-                    step="any"
-                    placeholder="0"
-                    value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
-                    error={errors.quantity}
-                    prefix="#"
-                    tooltip="The total volume of shares purchased and sold."
-                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col space-y-1.5 w-full">
+                      <div className="flex items-center space-x-1.5 mb-0.5">
+                        <label htmlFor="capitalType" className="text-xs font-semibold text-slate-400 tracking-wider uppercase">
+                          Quantity Type
+                        </label>
+                      </div>
+                      <select
+                        id="capitalType"
+                        value={capitalType}
+                        onChange={(e) => setCapitalType(e.target.value)}
+                        className="w-full bg-slate-950/60 border border-slate-800/80 hover:border-slate-700/60 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all duration-200"
+                      >
+                        <option value="shares">Shares</option>
+                        <option value="usd">Capital (USD)</option>
+                      </select>
+                    </div>
+
+                    {capitalType === 'shares' ? (
+                      <InputField
+                        label="Quantity"
+                        id="quantity"
+                        type="number"
+                        step="any"
+                        placeholder="0"
+                        value={quantity}
+                        onChange={(e) => setQuantity(e.target.value)}
+                        error={errors.quantity}
+                        prefix="#"
+                        tooltip="The total volume of shares purchased and sold."
+                      />
+                    ) : (
+                      <InputField
+                        label="Capital (USD)"
+                        id="capitalUsd"
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={capitalUsd}
+                        onChange={(e) => setCapitalUsd(e.target.value)}
+                        prefix="$"
+                        tooltip="Total USD you want to invest. Quantity will be auto-calculated."
+                        helperText={`≈ ${parseFloat(quantity || 0).toFixed(4)} shares`}
+                      />
+                    )}
+                  </div>
 
                   {/* FX Rates Group */}
                   <div className="sm:col-span-2 flex flex-col space-y-2 border-t border-slate-900 pt-3 mt-1">
