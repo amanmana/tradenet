@@ -23,7 +23,7 @@ export default function SimpleCalculator() {
   const [quoteFetchedAt, setQuoteFetchedAt] = useState(null);
   const [sellPriceWasFetched, setSellPriceWasFetched] = useState(false);
   const [quoteManualEdited, setQuoteManualEdited] = useState(false);
-  const [capitalType, setCapitalType] = useState('lot'); // 'lot' or 'usd'
+  const [capitalType, setCapitalType] = useState('shares'); // 'shares' or 'usd'
   const [capitalValue, setCapitalValue] = useState('');
 
   // Trailing Stop Reference States
@@ -97,8 +97,8 @@ export default function SimpleCalculator() {
 
   let shares = 0;
   if (bPrice > 0 && cValue > 0) {
-    if (capitalType === 'lot') {
-      shares = cValue * 100; // 1 lot = 100 shares
+    if (capitalType === 'shares') {
+      shares = cValue; // User inputs number of shares directly
     } else {
       shares = cValue / bPrice;
     }
@@ -271,14 +271,14 @@ export default function SimpleCalculator() {
                   <div className="flex bg-slate-950/60 p-1 rounded-xl border border-slate-800/80 shadow-inner w-full shrink-0 select-none">
                     <button
                       type="button"
-                      onClick={() => setCapitalType('lot')}
+                      onClick={() => setCapitalType('shares')}
                       className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        capitalType === 'lot'
+                        capitalType === 'shares'
                           ? 'bg-slate-900 border border-slate-700/50 text-emerald-450 shadow-md shadow-emerald-500/5'
                           : 'text-slate-400 hover:text-slate-200'
                       }`}
                     >
-                      Lot (x100)
+                      Shares
                     </button>
                     <button
                       type="button"
@@ -295,7 +295,7 @@ export default function SimpleCalculator() {
                 </div>
 
                 <InputField
-                  label={capitalType === 'lot' ? 'Capital (Lots)' : 'Capital (USD)'}
+                  label={capitalType === 'shares' ? 'Capital (Shares)' : 'Capital (USD)'}
                   id="capitalValue"
                   type="number"
                   step="0.01"
