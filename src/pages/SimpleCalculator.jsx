@@ -307,7 +307,7 @@ export default function SimpleCalculator() {
                 />
 
                 <InputField
-                  label="FX Rate (USD to MYR)"
+                  label="FX Rate (1 USD = ? MYR)"
                   id="customFxRate"
                   type="number"
                   step="0.0001"
