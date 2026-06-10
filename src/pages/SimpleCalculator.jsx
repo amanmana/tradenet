@@ -154,6 +154,7 @@ export default function SimpleCalculator() {
                 onChange={(e) => setTicker(e.target.value)}
                 className="sm:col-span-2"
                 tooltip="The stock ticker symbol representing the equity (e.g. AAPL, TSLA, MSFT)."
+                helperText={quoteShortName ? <span className="text-emerald-400 font-semibold text-sm">{quoteShortName}</span> : null}
               />
 
               <InputField
@@ -320,6 +321,7 @@ export default function SimpleCalculator() {
                   placeholder="e.g. AAPL"
                   value={trailingTicker}
                   onChange={(e) => setTrailingTicker(e.target.value)}
+                  helperText={trailingQuoteShortName ? <span className="text-emerald-400 font-semibold text-sm">{trailingQuoteShortName}</span> : null}
                 />
                 
                 <div className="flex flex-col space-y-1.5 w-full">
