@@ -320,26 +320,18 @@ export default function SimpleCalculator() {
                   />
                   <ResultCard
                     label="Profit / Loss (USD)"
-                    value={formatCurrency(Math.abs(profitLossUSD), '', 2)}
-                    currency="$"
-                    highlight={true}
-                    highlightType={profitLossUSD >= 0 ? 'profit' : 'loss'}
-                    prefix={profitLossUSD >= 0 ? '+' : '-'}
+                    value={profitLossUSD < 0 ? `-$${formatCurrency(Math.abs(profitLossUSD), '', 2)}` : `+$${formatCurrency(Math.abs(profitLossUSD), '', 2)}`}
+                    type={profitLossUSD >= 0 ? 'profit' : 'loss'}
                   />
                   <ResultCard
                     label={`Profit / Loss (MYR) @ ${fxRate}`}
-                    value={formatCurrency(Math.abs(profitLossMYR), '', 2)}
-                    currency="RM"
-                    highlight={true}
-                    highlightType={profitLossMYR >= 0 ? 'profit' : 'loss'}
-                    prefix={profitLossMYR >= 0 ? '+' : '-'}
+                    value={profitLossMYR < 0 ? `-RM ${formatCurrency(Math.abs(profitLossMYR), '', 2)}` : `+RM ${formatCurrency(Math.abs(profitLossMYR), '', 2)}`}
+                    type={profitLossMYR >= 0 ? 'profit' : 'loss'}
                   />
                   <ResultCard
                     label="ROI (%)"
                     value={formatPercent(roi)}
-                    highlight={true}
-                    highlightType={roi >= 0 ? 'profit' : 'loss'}
-                    prefix={roi >= 0 ? '+' : ''}
+                    type={roi >= 0 ? 'profit' : 'loss'}
                   />
                 </div>
               </SectionCard>
