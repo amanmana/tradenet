@@ -361,7 +361,7 @@ export default function SimpleCalculator() {
                       return (
                         <div key={pct} className="bg-slate-950 p-3 flex flex-col items-center justify-center hover:bg-slate-900 transition-colors">
                           <span className="text-xs text-slate-400 font-semibold mb-1">-{pct}%</span>
-                          <span className="text-sm text-emerald-400 font-bold">${dropPrice.toFixed(4)}</span>
+                          <span className="text-sm text-emerald-400 font-bold">${dropPrice.toFixed(3)}</span>
                         </div>
                       )
                     })}
