@@ -3,6 +3,7 @@ import { DEFAULT_SETTINGS } from '../data/defaultSettings';
 const STORAGE_KEYS = {
   SETTINGS: 'tradenet_my_settings',
   TRADES: 'tradenet_my_saved_trades',
+  RECENT_TICKERS: 'tradenet_my_recent_tickers',
 };
 
 /**
@@ -181,5 +182,43 @@ export const getLastSavedTrade = (market) => {
   } catch (error) {
     console.error('[TradeNet] Error getting last saved trade:', error);
     return null;
+  }
+};
+
+/**
+ * Retrieves the list of recently used ticker symbols.
+ */
+export const getRecentTickers = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.RECENT_TICKERS);
+    return raw ? JSON.parse(raw) : [];
+  } catch (error) {
+    console.error('[TradeNet] Error reading recent tickers:', error);
+    return [];
+  }
+};
+
+/**
+ * Adds a new ticker symbol to the recent list, keeping a maximum of 5.
+ */
+export const addRecentTicker = (ticker) => {
+  if (!ticker || typeof ticker !== 'string') return [];
+  const cleanTicker = ticker.trim().toUpperCase();
+  if (!cleanTicker) return [];
+
+  try {
+    let tickers = getRecentTickers();
+    // Remove if already exists
+    tickers = tickers.filter(t => t !== cleanTicker);
+    // Add to front
+    tickers.unshift(cleanTicker);
+    // Keep max 5
+    tickers = tickers.slice(0, 5);
+    
+    localStorage.setItem(STORAGE_KEYS.RECENT_TICKERS, JSON.stringify(tickers));
+    return tickers;
+  } catch (error) {
+    console.error('[TradeNet] Error saving recent ticker:', error);
+    return [];
   }
 };
