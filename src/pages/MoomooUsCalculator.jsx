@@ -727,15 +727,30 @@ ROI: ${results.roiPercent.toFixed(2)}%`;
                           Quantity Type
                         </label>
                       </div>
-                      <select
-                        id="capitalType"
-                        value={capitalType}
-                        onChange={(e) => setCapitalType(e.target.value)}
-                        className="w-full bg-slate-950/60 border border-slate-800/80 hover:border-slate-700/60 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all duration-200"
-                      >
-                        <option value="shares">Shares</option>
-                        <option value="usd">Capital (USD)</option>
-                      </select>
+                      <div className="flex bg-slate-950/60 p-1 rounded-xl border border-slate-800/80 shadow-inner w-full shrink-0 select-none">
+                        <button
+                          type="button"
+                          onClick={() => setCapitalType('shares')}
+                          className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                            capitalType === 'shares'
+                              ? 'bg-slate-900 border border-slate-700/50 text-emerald-450 shadow-md shadow-emerald-500/5'
+                              : 'text-slate-400 hover:text-slate-200'
+                          }`}
+                        >
+                          Shares
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCapitalType('usd')}
+                          className={`flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                            capitalType === 'usd'
+                              ? 'bg-slate-900 border border-slate-700/50 text-emerald-450 shadow-md shadow-emerald-500/5'
+                              : 'text-slate-400 hover:text-slate-200'
+                          }`}
+                        >
+                          Capital (USD)
+                        </button>
+                      </div>
                     </div>
 
                     {capitalType === 'shares' ? (
