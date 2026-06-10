@@ -23,6 +23,25 @@ export default function SimpleCalculator() {
   const [capitalType, setCapitalType] = useState('lot'); // 'lot' or 'usd'
   const [capitalValue, setCapitalValue] = useState('');
 
+  // Trailing Stop Reference States
+  const [trailingTicker, setTrailingTicker] = useState('');
+  const [trailingPrice, setTrailingPrice] = useState('');
+  const [trailingLoading, setTrailingLoading] = useState(false);
+  const [trailingError, setTrailingError] = useState(null);
+
+  const handleFetchTrailingPrice = async () => {
+    if (!trailingTicker.trim()) return;
+    setTrailingLoading(true);
+    setTrailingError(null);
+    const res = await fetchYahooLastPrice(trailingTicker);
+    setTrailingLoading(false);
+    if (res.ok) {
+      setTrailingPrice(res.price.toString());
+    } else {
+      setTrailingError(res.error);
+    }
+  };
+
   const handleFetchLastPrice = async () => {
     if (!ticker.trim()) return;
     setQuoteLoading(true);
@@ -205,6 +224,80 @@ export default function SimpleCalculator() {
                   prefix={capitalType === 'usd' ? '$' : '#'}
                 />
               </div>
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Trailing Stop Reference" subtitle="Calculate trailing stop prices based on percentage drops">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <InputField
+                  label="Ticker Symbol (Optional)"
+                  id="trailingTicker"
+                  placeholder="e.g. AAPL"
+                  value={trailingTicker}
+                  onChange={(e) => setTrailingTicker(e.target.value)}
+                />
+                
+                <div className="flex flex-col space-y-1.5 w-full">
+                  <div className="flex items-center space-x-1.5 mb-0.5">
+                    <label htmlFor="trailingPrice" className="text-xs font-semibold text-slate-400 tracking-wider uppercase">
+                      Reference Price (USD)
+                    </label>
+                  </div>
+                  
+                  <div className="flex space-x-2">
+                    <div className="relative flex-1">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 font-medium select-none pointer-events-none text-sm">
+                        $
+                      </div>
+                      <input
+                        id="trailingPrice"
+                        type="number"
+                        step="0.0001"
+                        placeholder="0.00"
+                        value={trailingPrice}
+                        onChange={(e) => setTrailingPrice(e.target.value)}
+                        className="w-full bg-slate-950/60 border border-slate-800/80 hover:border-slate-700/60 focus:border-emerald-500/80 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all duration-200"
+                      />
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={handleFetchTrailingPrice}
+                      disabled={trailingLoading || !trailingTicker.trim()}
+                      className="px-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-450 hover:text-slate-200 hover:bg-slate-900 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center shrink-0"
+                      title="Use last price from Yahoo Finance"
+                    >
+                      {trailingLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                      ) : (
+                        <TrendingUp className="w-4 h-4 text-emerald-400" />
+                      )}
+                    </button>
+                  </div>
+                  {trailingError && (
+                    <span className="text-[10px] text-red-400 mt-1 leading-tight block">
+                      ⚠️ {trailingError}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {parseFloat(trailingPrice) > 0 && (
+                <div className="bg-slate-950/60 border border-slate-800/80 rounded-xl overflow-hidden mt-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-slate-800/80">
+                    {[0.2, 0.3, 0.5, 0.7, 1, 1.5, 2, 2.5, 3, 3.5].map(pct => {
+                      const dropPrice = parseFloat(trailingPrice) * (1 - pct/100);
+                      return (
+                        <div key={pct} className="bg-slate-950 p-3 flex flex-col items-center justify-center hover:bg-slate-900 transition-colors">
+                          <span className="text-xs text-slate-400 font-semibold mb-1">-{pct}%</span>
+                          <span className="text-sm text-emerald-400 font-bold">${dropPrice.toFixed(4)}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </SectionCard>
         </div>
