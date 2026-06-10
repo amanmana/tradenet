@@ -274,7 +274,7 @@ export default function Settings() {
               value={settings.buyFxRate}
               onChange={(e) => handleChange(null, 'buyFxRate', parseFloat(e.target.value) || 0)}
               prefix="RM"
-              helperText="USD to MYR"
+              helperText="MYR to USD (Convert to buy)"
             />
 
             <InputField
@@ -285,7 +285,7 @@ export default function Settings() {
               value={settings.sellFxRate}
               onChange={(e) => handleChange(null, 'sellFxRate', parseFloat(e.target.value) || 0)}
               prefix="RM"
-              helperText="USD to MYR"
+              helperText="USD to MYR (Convert to sell)"
             />
 
             <div className="flex flex-col space-y-1.5">
